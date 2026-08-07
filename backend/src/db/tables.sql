@@ -1,104 +1,166 @@
--- 1. Catálogo de Tarifas (HU4)
-CREATE TABLE tarifas (
-    id SERIAL PRIMARY KEY,
-    categoria VARCHAR(20) NOT NULL UNIQUE CHECK (categoria IN ('economico', 'confort', 'premium')),
-    precio_base NUMERIC(10, 2) NOT NULL CHECK (precio_base > 0),
-    precio_por_km NUMERIC(10, 2) NOT NULL CHECK (precio_por_km > 0)
-);
+-- ============================================================
+-- Base de Datos: MercadoLibre
+-- PostgreSQL
+-- ============================================================
 
--- 2. Pasajeros (HU1)
-CREATE TABLE pasajeros (
+-- Crear la base de datos
+CREATE DATABASE mercadolibre;
+
+-- Conectarse a la base de datos
+-- \c mercadolibre
+
+-- ============================================================
+-- Tabla: Usuario
+-- ============================================================
+CREATE TABLE usuario (
     id SERIAL PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL,
     email VARCHAR(150) NOT NULL UNIQUE,
-    telefono VARCHAR(20) NOT NULL
+    nombre VARCHAR(100) NOT NULL,
+    fecha_registro TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    reputacion DECIMAL(3,2) NOT NULL DEFAULT 0.00
 );
 
--- 3. Conductores (HU1)
-CREATE TABLE conductores (
+-- ============================================================
+-- Tabla: Categoria
+-- ============================================================
+CREATE TABLE categoria (
     id SERIAL PRIMARY KEY,
     nombre VARCHAR(100) NOT NULL,
-    licencia VARCHAR(50) NOT NULL UNIQUE,
-    calificacion_promedio NUMERIC(3, 2) DEFAULT 0 CHECK (calificacion_promedio >= 0 AND calificacion_promedio <= 5),
-    disponible BOOLEAN DEFAULT TRUE
+    padre_id INT,
+    CONSTRAINT fk_categoria_padre
+        FOREIGN KEY (padre_id)
+        REFERENCES categoria(id)
+        ON DELETE SET NULL
 );
 
--- 4. Vehículos (HU2)
-CREATE TABLE vehiculos (
+-- ============================================================
+-- Tabla: Publicacion
+-- ============================================================
+CREATE TABLE publicacion (
     id SERIAL PRIMARY KEY,
-    conductor_id INTEGER NOT NULL REFERENCES conductores(id),
-    patente VARCHAR(20) NOT NULL UNIQUE,
-    modelo VARCHAR(50) NOT NULL,
-    anio INTEGER NOT NULL,
-    categoria VARCHAR(20) NOT NULL CHECK (categoria IN ('economico', 'confort', 'premium'))
+    vendedor_id INT NOT NULL,
+    titulo VARCHAR(200) NOT NULL,
+    descripcion TEXT NOT NULL,
+    precio NUMERIC(10,2) NOT NULL,
+    stock INT NOT NULL CHECK (stock >= 0),
+    categoria_id INT NOT NULL,
+    estado VARCHAR(20) NOT NULL,
+
+    CONSTRAINT fk_publicacion_usuario
+        FOREIGN KEY (vendedor_id)
+        REFERENCES usuario(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_publicacion_categoria
+        FOREIGN KEY (categoria_id)
+        REFERENCES categoria(id),
+
+    CONSTRAINT ck_publicacion_estado
+        CHECK (estado IN ('Activa', 'Pausada', 'Finalizada'))
 );
 
--- 5. Métodos de Pago (HU3)
-CREATE TABLE metodos_pago (
+-- ============================================================
+-- Tabla: Pregunta
+-- ============================================================
+CREATE TABLE pregunta (
     id SERIAL PRIMARY KEY,
-    pasajero_id INTEGER NOT NULL REFERENCES pasajeros(id),
-    tipo VARCHAR(30) NOT NULL CHECK (tipo IN ('tarjeta_credito', 'tarjeta_debito', 'efectivo', 'billetera_virtual')),
-    ultimos_digitos CHAR(4) -- Solo para tarjetas, puede ser NULL en efectivo
+    publicacion_id INT NOT NULL,
+    autor_id INT NOT NULL,
+    texto VARCHAR(500) NOT NULL,
+    fecha TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_pregunta_publicacion
+        FOREIGN KEY (publicacion_id)
+        REFERENCES publicacion(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_pregunta_usuario
+        FOREIGN KEY (autor_id)
+        REFERENCES usuario(id)
 );
 
--- 6. Cupones (HU13)
-CREATE TABLE cupones (
+-- ============================================================
+-- Tabla: Respuesta
+-- ============================================================
+CREATE TABLE respuesta (
     id SERIAL PRIMARY KEY,
-    codigo VARCHAR(20) NOT NULL UNIQUE,
-    porcentaje_descuento INTEGER NOT NULL CHECK (porcentaje_descuento BETWEEN 1 AND 100),
-    fecha_vencimiento DATE NOT NULL
+    pregunta_id INT NOT NULL UNIQUE,
+    texto VARCHAR(500) NOT NULL,
+    fecha TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_respuesta_pregunta
+        FOREIGN KEY (pregunta_id)
+        REFERENCES pregunta(id)
+        ON DELETE CASCADE
 );
 
--- 7. Multiplicador Horario (HU11)
-CREATE TABLE multiplicadores_horario (
+-- ============================================================
+-- Tabla: Compra
+-- ============================================================
+CREATE TABLE compra (
     id SERIAL PRIMARY KEY,
-    dia_semana INTEGER NOT NULL CHECK (dia_semana BETWEEN 0 AND 6), -- 0=Domingo, 6=Sábado
-    hora_desde TIME NOT NULL,
-    hora_hasta TIME NOT NULL,
-    factor NUMERIC(3, 2) NOT NULL CHECK (factor > 1),
-    CONSTRAINT check_horario_valido CHECK (hora_desde < hora_hasta)
+    publicacion_id INT NOT NULL,
+    comprador_id INT NOT NULL,
+    cantidad INT NOT NULL CHECK (cantidad > 0),
+    fecha TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    total NUMERIC(10,2) NOT NULL CHECK (total >= 0),
+    estado VARCHAR(20) NOT NULL,
+
+    CONSTRAINT fk_compra_publicacion
+        FOREIGN KEY (publicacion_id)
+        REFERENCES publicacion(id),
+
+    CONSTRAINT fk_compra_usuario
+        FOREIGN KEY (comprador_id)
+        REFERENCES usuario(id),
+
+    CONSTRAINT ck_compra_estado
+        CHECK (estado IN ('Pendiente', 'Pagada', 'Enviada', 'Cancelada', 'Finalizada'))
 );
 
--- 8. Viajes (HU5, HU6, HU7, HU11, HU13)
-CREATE TABLE viajes (
+-- ============================================================
+-- Tabla: Calificacion
+-- ============================================================
+CREATE TABLE calificacion (
     id SERIAL PRIMARY KEY,
-    pasajero_id INTEGER NOT NULL REFERENCES pasajeros(id),
-    conductor_id INTEGER REFERENCES conductores(id), -- NULL inicialmente (HU5)
-    vehiculo_id INTEGER REFERENCES vehiculos(id),
-    metodo_pago_id INTEGER NOT NULL REFERENCES metodos_pago(id),
-    cupon_id INTEGER REFERENCES cupones(id),
-    origen TEXT NOT NULL,
-    destino TEXT NOT NULL,
-    distancia_km NUMERIC(10, 2) NOT NULL CHECK (distancia_km > 0),
-    fecha_solicitud TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    fecha_inicio TIMESTAMP,
-    fecha_fin TIMESTAMP,
-    estado VARCHAR(20) DEFAULT 'pendiente' 
-        CHECK (estado IN ('pendiente', 'asignado', 'en_curso', 'finalizado', 'cancelado', 'sin_conductor')),
-    tarifa_final NUMERIC(10, 2) NOT NULL, -- Se guarda el cálculo final (HU5)
-    multiplicador_aplicado NUMERIC(3, 2) DEFAULT 1.0
+    compra_id INT NOT NULL,
+    autor_id INT NOT NULL,
+    receptor_id INT NOT NULL,
+    puntaje INT NOT NULL,
+    comentario VARCHAR(500),
+
+    CONSTRAINT fk_calificacion_compra
+        FOREIGN KEY (compra_id)
+        REFERENCES compra(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_calificacion_autor
+        FOREIGN KEY (autor_id)
+        REFERENCES usuario(id),
+
+    CONSTRAINT fk_calificacion_receptor
+        FOREIGN KEY (receptor_id)
+        REFERENCES usuario(id),
+
+    CONSTRAINT ck_calificacion_puntaje
+        CHECK (puntaje BETWEEN 1 AND 5)
 );
 
--- 9. Calificaciones (HU8)
-CREATE TABLE calificaciones (
-    id SERIAL PRIMARY KEY,
-    viaje_id INTEGER NOT NULL UNIQUE REFERENCES viajes(id),
-    puntaje_pasajero INTEGER CHECK (puntaje_pasajero BETWEEN 1 AND 5),
-    puntaje_conductor INTEGER CHECK (puntaje_conductor BETWEEN 1 AND 5),
-    comentario TEXT
-);
+-- ============================================================
+-- Índices
+-- ============================================================
 
--- 10. Cargos / Penalidades (HU12)
-CREATE TABLE cargos (
-    id SERIAL PRIMARY KEY,
-    viaje_id INTEGER NOT NULL REFERENCES viajes(id),
-    monto NUMERIC(10, 2) NOT NULL,
-    motivo VARCHAR(100) DEFAULT 'Penalidad por cancelación tardía'
-);
+CREATE INDEX idx_publicacion_categoria
+ON publicacion(categoria_id);
 
--- 11. Tabla pivote para uso de cupones (HU13 - Para que no se repita por pasajero)
-CREATE TABLE cupones_usados (
-    pasajero_id INTEGER REFERENCES pasajeros(id),
-    cupon_id INTEGER REFERENCES cupones(id),
-    PRIMARY KEY (pasajero_id, cupon_id)
-);
+CREATE INDEX idx_publicacion_vendedor
+ON publicacion(vendedor_id);
+
+CREATE INDEX idx_compra_comprador
+ON compra(comprador_id);
+
+CREATE INDEX idx_pregunta_publicacion
+ON pregunta(publicacion_id);
+
+CREATE INDEX idx_calificacion_receptor
+ON calificacion(receptor_id);
