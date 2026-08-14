@@ -1,17 +1,19 @@
 from datetime import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 
 
-class CreateUserDTO(BaseModel):
-    email: str
+class UserCreateDTO(BaseModel):
+    email: EmailStr
     password: str
-    age: int
+    name: str
 
 
 class UserResponseDTO(BaseModel):
     id: int
-    email: str
-    age: int
-    created_at: datetime
+    email: EmailStr
+    name: str
+    registration_date: datetime
+    reputation: float
 
-    model_config = {"from_attributes": True}
+    class Config:
+        from_attributes = True
