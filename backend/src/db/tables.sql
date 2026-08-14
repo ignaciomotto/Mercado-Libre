@@ -1,166 +1,213 @@
 -- ============================================================
--- Base de Datos: MercadoLibre
+-- Database: MercadoLibre
+-- Description: C2C Marketplace
 -- PostgreSQL
 -- ============================================================
 
--- Crear la base de datos
+-- Create database
 CREATE DATABASE mercadolibre;
 
--- Conectarse a la base de datos
+-- Connect to the database
+-- In psql:
 -- \c mercadolibre
 
--- ============================================================
--- Tabla: Usuario
--- ============================================================
-CREATE TABLE usuario (
-    id SERIAL PRIMARY KEY,
-    email VARCHAR(150) NOT NULL UNIQUE,
-    nombre VARCHAR(100) NOT NULL,
-    fecha_registro TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    reputacion DECIMAL(3,2) NOT NULL DEFAULT 0.00
-);
 
 -- ============================================================
--- Tabla: Categoria
+-- Table: User
 -- ============================================================
-CREATE TABLE categoria (
+CREATE TABLE "User" (
     id SERIAL PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL,
-    padre_id INT,
-    CONSTRAINT fk_categoria_padre
-        FOREIGN KEY (padre_id)
-        REFERENCES categoria(id)
+    email VARCHAR(150) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    registration_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    reputation NUMERIC(3,2) NOT NULL DEFAULT 0.00,
+
+    CONSTRAINT ck_user_reputation
+        CHECK (reputation >= 0 AND reputation <= 5)
+);
+
+
+-- ============================================================
+-- Table: Category
+-- ============================================================
+CREATE TABLE category (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    parent_id INT,
+
+    CONSTRAINT fk_category_parent
+        FOREIGN KEY (parent_id)
+        REFERENCES category(id)
         ON DELETE SET NULL
 );
 
--- ============================================================
--- Tabla: Publicacion
--- ============================================================
-CREATE TABLE publicacion (
-    id SERIAL PRIMARY KEY,
-    vendedor_id INT NOT NULL,
-    titulo VARCHAR(200) NOT NULL,
-    descripcion TEXT NOT NULL,
-    precio NUMERIC(10,2) NOT NULL,
-    stock INT NOT NULL CHECK (stock >= 0),
-    categoria_id INT NOT NULL,
-    estado VARCHAR(20) NOT NULL,
 
-    CONSTRAINT fk_publicacion_usuario
-        FOREIGN KEY (vendedor_id)
-        REFERENCES usuario(id)
+-- ============================================================
+-- Table: Listing
+-- ============================================================
+CREATE TABLE listing (
+    id SERIAL PRIMARY KEY,
+    seller_id INT NOT NULL,
+    title VARCHAR(200) NOT NULL,
+    description TEXT NOT NULL,
+    price NUMERIC(10,2) NOT NULL,
+    stock INT NOT NULL,
+    category_id INT NOT NULL,
+    status VARCHAR(20) NOT NULL,
+
+    CONSTRAINT fk_listing_seller
+        FOREIGN KEY (seller_id)
+        REFERENCES "User"(id)
         ON DELETE CASCADE,
 
-    CONSTRAINT fk_publicacion_categoria
-        FOREIGN KEY (categoria_id)
-        REFERENCES categoria(id),
+    CONSTRAINT fk_listing_category
+        FOREIGN KEY (category_id)
+        REFERENCES category(id),
 
-    CONSTRAINT ck_publicacion_estado
-        CHECK (estado IN ('Activa', 'Pausada', 'Finalizada'))
+    CONSTRAINT ck_listing_price
+        CHECK (price >= 0),
+
+    CONSTRAINT ck_listing_stock
+        CHECK (stock >= 0),
+
+    CONSTRAINT ck_listing_status
+        CHECK (status IN ('Active', 'Paused', 'Finished'))
 );
 
--- ============================================================
--- Tabla: Pregunta
--- ============================================================
-CREATE TABLE pregunta (
-    id SERIAL PRIMARY KEY,
-    publicacion_id INT NOT NULL,
-    autor_id INT NOT NULL,
-    texto VARCHAR(500) NOT NULL,
-    fecha TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT fk_pregunta_publicacion
-        FOREIGN KEY (publicacion_id)
-        REFERENCES publicacion(id)
+-- ============================================================
+-- Table: Question
+-- ============================================================
+CREATE TABLE question (
+    id SERIAL PRIMARY KEY,
+    listing_id INT NOT NULL,
+    author_id INT NOT NULL,
+    text VARCHAR(500) NOT NULL,
+    date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_question_listing
+        FOREIGN KEY (listing_id)
+        REFERENCES listing(id)
         ON DELETE CASCADE,
 
-    CONSTRAINT fk_pregunta_usuario
-        FOREIGN KEY (autor_id)
-        REFERENCES usuario(id)
+    CONSTRAINT fk_question_author
+        FOREIGN KEY (author_id)
+        REFERENCES "User"(id)
 );
 
--- ============================================================
--- Tabla: Respuesta
--- ============================================================
-CREATE TABLE respuesta (
-    id SERIAL PRIMARY KEY,
-    pregunta_id INT NOT NULL UNIQUE,
-    texto VARCHAR(500) NOT NULL,
-    fecha TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT fk_respuesta_pregunta
-        FOREIGN KEY (pregunta_id)
-        REFERENCES pregunta(id)
+-- ============================================================
+-- Table: Answer
+-- ============================================================
+CREATE TABLE answer (
+    id SERIAL PRIMARY KEY,
+    question_id INT NOT NULL UNIQUE,
+    text VARCHAR(500) NOT NULL,
+    date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_answer_question
+        FOREIGN KEY (question_id)
+        REFERENCES question(id)
         ON DELETE CASCADE
 );
 
+
 -- ============================================================
--- Tabla: Compra
+-- Table: Purchase
 -- ============================================================
-CREATE TABLE compra (
+CREATE TABLE purchase (
     id SERIAL PRIMARY KEY,
-    publicacion_id INT NOT NULL,
-    comprador_id INT NOT NULL,
-    cantidad INT NOT NULL CHECK (cantidad > 0),
-    fecha TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    total NUMERIC(10,2) NOT NULL CHECK (total >= 0),
-    estado VARCHAR(20) NOT NULL,
+    listing_id INT NOT NULL,
+    buyer_id INT NOT NULL,
+    quantity INT NOT NULL,
+    date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    total NUMERIC(10,2) NOT NULL,
+    status VARCHAR(20) NOT NULL,
 
-    CONSTRAINT fk_compra_publicacion
-        FOREIGN KEY (publicacion_id)
-        REFERENCES publicacion(id),
+    CONSTRAINT fk_purchase_listing
+        FOREIGN KEY (listing_id)
+        REFERENCES listing(id),
 
-    CONSTRAINT fk_compra_usuario
-        FOREIGN KEY (comprador_id)
-        REFERENCES usuario(id),
+    CONSTRAINT fk_purchase_buyer
+        FOREIGN KEY (buyer_id)
+        REFERENCES "User"(id),
 
-    CONSTRAINT ck_compra_estado
-        CHECK (estado IN ('Pendiente', 'Pagada', 'Enviada', 'Cancelada', 'Finalizada'))
+    CONSTRAINT ck_purchase_quantity
+        CHECK (quantity > 0),
+
+    CONSTRAINT ck_purchase_total
+        CHECK (total >= 0),
+
+    CONSTRAINT ck_purchase_status
+        CHECK (
+            status IN (
+                'Pending',
+                'Paid',
+                'Shipped',
+                'Cancelled',
+                'Completed'
+            )
+        )
 );
 
--- ============================================================
--- Tabla: Calificacion
--- ============================================================
-CREATE TABLE calificacion (
-    id SERIAL PRIMARY KEY,
-    compra_id INT NOT NULL,
-    autor_id INT NOT NULL,
-    receptor_id INT NOT NULL,
-    puntaje INT NOT NULL,
-    comentario VARCHAR(500),
 
-    CONSTRAINT fk_calificacion_compra
-        FOREIGN KEY (compra_id)
-        REFERENCES compra(id)
+-- ============================================================
+-- Table: Rating
+-- ============================================================
+CREATE TABLE rating (
+    id SERIAL PRIMARY KEY,
+    purchase_id INT NOT NULL,
+    author_id INT NOT NULL,
+    receiver_id INT NOT NULL,
+    score INT NOT NULL,
+    comment VARCHAR(500),
+
+    CONSTRAINT fk_rating_purchase
+        FOREIGN KEY (purchase_id)
+        REFERENCES purchase(id)
         ON DELETE CASCADE,
 
-    CONSTRAINT fk_calificacion_autor
-        FOREIGN KEY (autor_id)
-        REFERENCES usuario(id),
+    CONSTRAINT fk_rating_author
+        FOREIGN KEY (author_id)
+        REFERENCES "User"(id),
 
-    CONSTRAINT fk_calificacion_receptor
-        FOREIGN KEY (receptor_id)
-        REFERENCES usuario(id),
+    CONSTRAINT fk_rating_receiver
+        FOREIGN KEY (receiver_id)
+        REFERENCES "User"(id),
 
-    CONSTRAINT ck_calificacion_puntaje
-        CHECK (puntaje BETWEEN 1 AND 5)
+    CONSTRAINT ck_rating_score
+        CHECK (score BETWEEN 1 AND 5),
+
+    CONSTRAINT ck_rating_different_users
+        CHECK (author_id <> receiver_id)
 );
 
+
 -- ============================================================
--- Índices
+-- Indexes
 -- ============================================================
 
-CREATE INDEX idx_publicacion_categoria
-ON publicacion(categoria_id);
+CREATE INDEX idx_listing_category
+ON listing(category_id);
 
-CREATE INDEX idx_publicacion_vendedor
-ON publicacion(vendedor_id);
+CREATE INDEX idx_listing_seller
+ON listing(seller_id);
 
-CREATE INDEX idx_compra_comprador
-ON compra(comprador_id);
+CREATE INDEX idx_purchase_buyer
+ON purchase(buyer_id);
 
-CREATE INDEX idx_pregunta_publicacion
-ON pregunta(publicacion_id);
+CREATE INDEX idx_purchase_listing
+ON purchase(listing_id);
 
-CREATE INDEX idx_calificacion_receptor
-ON calificacion(receptor_id);
+CREATE INDEX idx_question_listing
+ON question(listing_id);
+
+CREATE INDEX idx_question_author
+ON question(author_id);
+
+CREATE INDEX idx_rating_receiver
+ON rating(receiver_id);
+
+CREATE INDEX idx_rating_purchase
+ON rating(purchase_id);
