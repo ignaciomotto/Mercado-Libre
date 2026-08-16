@@ -1,18 +1,22 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
-from src.config.env import settings
+DATABASE_URL = "postgresql://postgres:POSTGRES@localhost:5432/MercadoLibre"
 
-DATABASE_URL = "postgresql+psycopg2://postgres:password@localhost:5432/MercadoLibre"
+engine = create_engine(DATABASE_URL)
 
-engine = create_engine(settings.DATABASE_URL)
-SessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False)
+SessionLocal = sessionmaker(
+    autocommit=False,
+    autoflush=False,
+    bind=engine
+)
+
 Base = declarative_base()
 
 
 def get_db():
-    """Dependency de FastAPI: abre una sesión por request y la cierra al final."""
     db = SessionLocal()
+
     try:
         yield db
     finally:

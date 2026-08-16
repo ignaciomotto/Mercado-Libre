@@ -11,4 +11,4 @@ class User(Base):
     password = Column(String, nullable=False)
     name = Column(String, nullable=False)
     registration_date = Column(DateTime, server_default=func.now())
-    reputation = Column(Numeric, server_default=0.00)
+    reputation = Column(Numeric, server_default="0.00")

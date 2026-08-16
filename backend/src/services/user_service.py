@@ -1,37 +1,37 @@
 from sqlalchemy.orm import Session
 
-from src.dtos.user_dto import CreateUserDTO, UserResponseDTO
-from src.mappers.user_mapper import to_user_response
-from src.repositories.user_repository import UserRepository
-from src.utils.hash import hash_password
+from src.db.models.user_model import User
+from src.dtos.user_dto import UserCreateDTO, UserResponseDTO
+from src.mappers.user_mapper import (
+    user_create_to_model,
+    user_to_response_dto
+)
 
 
 class UserService:
-    def __init__(self, db: Session):
-        self.repo = UserRepository(db)
 
-    def create(self, dto: CreateUserDTO) -> UserResponseDTO:
-        """Ejemplo completo: hashea la password, crea el user y devuelve el DTO de respuesta."""
-        password_hash = hash_password(dto.password)
-        user = self.repo.create(
-            email=dto.email,
-            password_hash=password_hash,
-            age=dto.age,
+    @staticmethod
+    def create_user(
+        db: Session,
+        dto: UserCreateDTO
+    ) -> UserResponseDTO:
+
+        existing_user = (
+            db.query(User)
+            .filter(User.email == dto.email)
+            .first()
         )
-        return to_user_response(user)
 
-    def get_by_id(self, user_id: int) -> UserResponseDTO:
-        # TODO: buscar el user. Si no existe, lanzar NotFoundError. Devolver UserResponseDTO.
-        ...
+        if existing_user:
+            raise ValueError("Email already registered")
 
-    def list_all(self) -> list[UserResponseDTO]:
-        # TODO: devolver lista de UserResponseDTO
-        ...
+        user = user_create_to_model(dto)
 
-    def update(self, user_id: int, dto) -> UserResponseDTO:
-        # TODO: validar existencia, aplicar cambios desde dto, devolver el DTO actualizado.
-        ...
+        # HU1
+        user.reputation = 0.0
 
-    def delete(self, user_id: int) -> None:
-        # TODO: borrar el user. Si no existe, NotFoundError.
-        ...
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+        return user_to_response_dto(user)

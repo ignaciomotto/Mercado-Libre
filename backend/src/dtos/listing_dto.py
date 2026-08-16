@@ -1,14 +1,13 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class ListingCreateDTO(BaseModel):
     seller_id: int
     title: str
     description: str
-    price: float
-    stock: int
+    price: float = Field(gt=0)
+    stock: int = Field(gt=0)
     category_id: int
-    status: str
 
 
 class ListingResponseDTO(BaseModel):
@@ -20,6 +19,3 @@ class ListingResponseDTO(BaseModel):
     stock: int
     category_id: int
     status: str
-
-    class Config:
-        from_attributes = True

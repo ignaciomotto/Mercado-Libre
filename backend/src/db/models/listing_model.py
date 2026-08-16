@@ -3,7 +3,7 @@ from sqlalchemy import Column, Integer, String, Numeric, func
 from src.db.connection import Base
 
 class Listing(Base):
-    __tablename__ = "listings"
+    __tablename__ = "listing"
 
     id = Column(Integer, primary_key=True)
     seller_id = Column(Integer, nullable=False)

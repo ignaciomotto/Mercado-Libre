@@ -1,11 +1,10 @@
 from datetime import datetime
-from pydantic import BaseModel, EmailStr
-
+from pydantic import BaseModel, EmailStr, Field
 
 class UserCreateDTO(BaseModel):
     email: EmailStr
-    password: str
-    name: str
+    password: str = Field(min_length=8)
+    name: str = Field(min_length=1, max_length=100)
 
 
 class UserResponseDTO(BaseModel):
@@ -13,7 +12,4 @@ class UserResponseDTO(BaseModel):
     email: EmailStr
     name: str
     registration_date: datetime
-    reputation: float
-
-    class Config:
-        from_attributes = True
+    reputation: float | None
