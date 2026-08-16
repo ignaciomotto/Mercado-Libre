@@ -14,8 +14,24 @@ class PurchaseResponseDTO(BaseModel):
     buyer_id: int
     quantity: int
     date: datetime
-    total: float
+    total_price: float
     status: str
 
     class Config:
         from_attributes = True
+
+class PurchaseHistoryDTO(BaseModel):
+    id: int
+    quantity: int
+    total_price: float
+    status: str
+    date: datetime
+
+    listing_id: int
+    listing_title: str
+    listing_description: str
+    listing_price: float
+
+    seller_id: int
+    seller_name: str
+    seller_email: str

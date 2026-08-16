@@ -7,7 +7,7 @@ class ListingCreateSchema(BaseModel):
     description: str
     price: float = Field(gt=0)
     stock: int = Field(gt=0)
-    category_id: int
+    category_id: Optional[int] = None
 
 
 class ListingResponseSchema(BaseModel):
@@ -17,7 +17,7 @@ class ListingResponseSchema(BaseModel):
     description: str
     price: float
     stock: int
-    category_id: int
+    category_id: Optional[int] = None
     status: str
 
     class Config:

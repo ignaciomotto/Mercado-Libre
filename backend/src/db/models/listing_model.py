@@ -11,5 +11,5 @@ class Listing(Base):
     description = Column(String, nullable=False)
     price = Column(Numeric, nullable=False)
     stock = Column(Integer, nullable=False)
-    category_id = Column(Integer, nullable=False)
-    status = Column(String, nullable=False)
+    category_id = Column(Integer, nullable=True)
+    status = Column(String, nullable=False, server_default="Active")

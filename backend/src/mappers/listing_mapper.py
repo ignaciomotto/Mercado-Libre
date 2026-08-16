@@ -3,7 +3,7 @@ from src.dtos.listing_dto import (
     ListingCreateDTO,
     ListingResponseDTO
 )
-
+from ..dtos.listing_dto import TopListingDTO
 
 def listing_create_to_model(
     dto: ListingCreateDTO
@@ -33,4 +33,17 @@ def listing_to_response_dto(
         stock=listing.stock,
         category_id=listing.category_id,
         status=listing.status
+    )
+
+
+def listing_to_top_dto(
+    listing,
+    units_sold: int
+):
+    return TopListingDTO(
+        listing_id=listing.id,
+        title=listing.title,
+        price=float(listing.price),
+        category_id=listing.category_id,
+        units_sold=units_sold
     )

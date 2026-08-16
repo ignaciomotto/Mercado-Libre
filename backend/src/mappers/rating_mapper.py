@@ -5,30 +5,29 @@ from src.dtos.rating_dto import (
 )
 
 
-def rating_create_to_model(
-    dto: RatingCreateDTO,
-    purchase_id: int,
-    receiver_id: int
-) -> Rating:
-
-    return Rating(
-        purchase_id=purchase_id,
-        author_id=dto.author_id,
-        receiver_id=receiver_id,
-        score=dto.score,
-        comment=dto.comment
-    )
-
-
-def rating_to_response_dto(
-    rating: Rating
-) -> RatingResponseDTO:
-
+def rating_to_schema(rating):
     return RatingResponseDTO(
         id=rating.id,
         purchase_id=rating.purchase_id,
-        author_id=rating.author_id,
-        receiver_id=rating.receiver_id,
+        author_id=rating.rater_id,
+        receiver_id=rating.rated_id,
         score=rating.score,
-        comment=rating.comment
+        comment=rating.comment,
+        date=rating.date
+    )
+
+
+def rating_create_to_model(
+    purchase_id: int,
+    rater_id: int,
+    rated_id: int,
+    score: int,
+    comment: str | None
+):
+    return Rating(
+        purchase_id=purchase_id,
+        rater_id=rater_id,
+        rated_id=rated_id,
+        score=score,
+        comment=comment
     )

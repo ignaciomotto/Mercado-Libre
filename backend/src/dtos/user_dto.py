@@ -13,3 +13,11 @@ class UserResponseDTO(BaseModel):
     name: str
     registration_date: datetime
     reputation: float | None
+
+
+class TopSellerDTO(BaseModel):
+    id: int
+    name: str
+    email: EmailStr
+    reputation: float
+    completed_sales: int

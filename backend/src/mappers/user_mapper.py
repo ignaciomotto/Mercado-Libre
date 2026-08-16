@@ -10,11 +10,11 @@ def user_create_to_model(dto: UserCreateDTO) -> User:
     )
 
 
-def user_to_response_dto(user: User) -> UserResponseDTO:
+def user_to_response_dto(user: User, reputation=None) -> UserResponseDTO:
     return UserResponseDTO(
         id=user.id,
         email=user.email,
         name=user.name,
-        registration_date=user.registration_date,
-        reputation=user.reputation
+        registration_date = user.registration_date,
+        reputation=reputation
     )

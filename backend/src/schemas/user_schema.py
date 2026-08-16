@@ -1,13 +1,22 @@
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr
+from datetime import datetime
 
 
-class CreateUserSchema(BaseModel):
+class UserCreate(BaseModel):
     email: EmailStr
-    password: str = Field(min_length=8)
-    age: int = Field(ge=18)
+    password: str
+    name: str
 
 
-class UpdateUserSchema(BaseModel):
-    # TODO: completar con los campos opcionales que se permiten actualizar.
-    # Tip: todos los campos van como Optional / con default None.
-    ...
+class UserUpdate(BaseModel):
+    email: EmailStr | None = None
+    password: str | None = None
+    name: str | None = None
+
+
+class UserResponse(BaseModel):
+    id: int
+    email: EmailStr
+    name: str
+    reputation: float | None
+    registration_date: datetime

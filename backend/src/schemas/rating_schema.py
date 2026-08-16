@@ -1,19 +1,18 @@
-from pydantic import BaseModel, Field
 from datetime import datetime
 
+from pydantic import BaseModel, Field
+
+
 class RatingCreateDTO(BaseModel):
-    purchase_id: int
-    author_id: int
-    receiver_id: int
-    score: int = Field(..., ge=1, le=5)
+    score: int = Field(ge=1, le=5)
     comment: str | None = None
 
 
 class RatingResponseDTO(BaseModel):
     id: int
     purchase_id: int
-    author_id: int
-    receiver_id: int
+    rater_id: int
+    rated_id: int
     score: int
     comment: str | None
     date: datetime

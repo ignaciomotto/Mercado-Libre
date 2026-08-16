@@ -21,10 +21,6 @@ CREATE TABLE "User" (
     password VARCHAR(255) NOT NULL,
     name VARCHAR(100) NOT NULL,
     registration_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    reputation NUMERIC(3,2) NOT NULL DEFAULT 0.00,
-
-    CONSTRAINT ck_user_reputation
-        CHECK (reputation >= 0 AND reputation <= 5)
 );
 
 
@@ -53,8 +49,8 @@ CREATE TABLE listing (
     description TEXT NOT NULL,
     price NUMERIC(10,2) NOT NULL,
     stock INT NOT NULL,
-    category_id INT NOT NULL,
-    status VARCHAR(20) NOT NULL,
+    category_id INT,
+    status VARCHAR(20) NOT NULL DEFAULT 'Active',
 
     CONSTRAINT fk_listing_seller
         FOREIGN KEY (seller_id)
@@ -122,7 +118,7 @@ CREATE TABLE purchase (
     buyer_id INT NOT NULL,
     quantity INT NOT NULL,
     date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    total NUMERIC(10,2) NOT NULL,
+    total_price NUMERIC(10,2) NOT NULL,
     status VARCHAR(20) NOT NULL,
 
     CONSTRAINT fk_purchase_listing
@@ -143,8 +139,6 @@ CREATE TABLE purchase (
         CHECK (
             status IN (
                 'Pending',
-                'Paid',
-                'Shipped',
                 'Cancelled',
                 'Completed'
             )
@@ -157,30 +151,26 @@ CREATE TABLE purchase (
 -- ============================================================
 CREATE TABLE rating (
     id SERIAL PRIMARY KEY,
-    purchase_id INT NOT NULL,
-    author_id INT NOT NULL,
-    receiver_id INT NOT NULL,
-    score INT NOT NULL,
-    comment VARCHAR(500),
+    purchase_id INTEGER NOT NULL,
+    rater_id INTEGER NOT NULL,
+    rated_id INTEGER NOT NULL,
+    score INTEGER NOT NULL CHECK (score >= 1 AND score <= 5),
+    date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT fk_rating_purchase
         FOREIGN KEY (purchase_id)
-        REFERENCES purchase(id)
-        ON DELETE CASCADE,
+        REFERENCES purchases(id),
 
-    CONSTRAINT fk_rating_author
-        FOREIGN KEY (author_id)
-        REFERENCES "User"(id),
+    CONSTRAINT fk_rating_rater
+        FOREIGN KEY (rater_id)
+        REFERENCES users(id),
 
-    CONSTRAINT fk_rating_receiver
-        FOREIGN KEY (receiver_id)
-        REFERENCES "User"(id),
+    CONSTRAINT fk_rating_rated
+        FOREIGN KEY (rated_id)
+        REFERENCES users(id),
 
-    CONSTRAINT ck_rating_score
-        CHECK (score BETWEEN 1 AND 5),
-
-    CONSTRAINT ck_rating_different_users
-        CHECK (author_id <> receiver_id)
+    CONSTRAINT unique_purchase_rating
+        UNIQUE (purchase_id, rater_id, rated_id)
 );
 
 
