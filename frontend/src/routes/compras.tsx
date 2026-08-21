@@ -5,6 +5,7 @@ import { AppLayout } from "@/components/AppLayout";
 import {
   calificar,
   cancelarCompra,
+  completarCompra,
   formatearFecha,
   formatearPrecio,
   getComprasDeUsuario,
@@ -55,6 +56,15 @@ function Compras() {
       calificar(compraId, usuario!.id, puntaje),
     onSuccess: () => {
       setMensaje("¡Gracias! La reputación se recalculó automáticamente.");
+      invalidar();
+    },
+    onError: (e: Error) => setMensaje(e.message),
+  });
+
+  const completarMut = useMutation({
+    mutationFn: (id: number) => completarCompra(id),
+    onSuccess: () => {
+      setMensaje("Compra marcada como finalizada.");
       invalidar();
     },
     onError: (e: Error) => setMensaje(e.message),
@@ -133,12 +143,14 @@ function Compras() {
 
               <div className="mt-4 flex flex-wrap items-center gap-3">
                 {c.estado === "pendiente" && (
-                  <button
-                    onClick={() => cancelarMut.mutate(c.id)}
-                    className="btn-base btn-outline hover:bg-secondary"
-                  >
-                    Cancelar compra
-                  </button>
+                  <>
+                    <button onClick={() => cancelarMut.mutate(c.id)} className="btn-base btn-outline hover:bg-secondary">
+                      Cancelar compra
+                    </button>
+                    <button onClick={() => completarMut.mutate(c.id)} className="btn-base btn-primary hover:brightness-105">
+                      Finalizar compra
+                    </button>
+                  </>
                 )}
                 {c.estado === "finalizada" && (
                   <div className="flex items-center gap-2">

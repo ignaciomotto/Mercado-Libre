@@ -1,3 +1,4 @@
+from datetime import datetime
 from pydantic import BaseModel, Field
 
 
@@ -19,6 +20,7 @@ class ListingResponseDTO(BaseModel):
     stock: int
     category_id: int | None
     status: str
+    created_at: datetime | None = None
 
 
 class TopListingDTO(BaseModel):
@@ -27,3 +29,8 @@ class TopListingDTO(BaseModel):
     price: float
     category_id: int
     units_sold: int
+    seller_id: int
+    description: str
+    stock: int
+    status: str
+    created_at: datetime | None = None

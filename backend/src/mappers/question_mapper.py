@@ -24,20 +24,22 @@ def answer_to_schema(answer):
     )
 
 def question_create_to_model(
-    dto: QuestionCreateDTO,
-    listing_id: int
+    listing_id: int,
+    author_id: int,
+    text: str
 ) -> Question:
 
     return Question(
         listing_id=listing_id,
-        author_id=dto.author_id,
-        text=dto.text
+        author_id=author_id,
+        text=text
     )
 
 
 def question_to_response_dto(
     question: Question,
-    answer=None
+    answer=None,
+    author_name=None
 ) -> QuestionResponseDTO:
 
     return QuestionResponseDTO(
@@ -46,5 +48,6 @@ def question_to_response_dto(
         author_id=question.author_id,
         text=question.text,
         date=question.date,
-        answer=answer_to_schema(answer) if answer else None
+        answer=answer_to_schema(answer) if answer else None,
+        author_name=author_name
     )

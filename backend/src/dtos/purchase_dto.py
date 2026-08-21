@@ -35,3 +35,9 @@ class PurchaseHistoryDTO(BaseModel):
     seller_id: int
     seller_name: str
     seller_email: str
+    listing_stock: int
+    listing_category_id: int | None
+    listing_status: str
+    seller_registration_date: datetime
+    seller_reputation: float | None
+    seller_rating_count: int

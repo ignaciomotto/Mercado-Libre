@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Numeric, func
+from sqlalchemy import Column, Integer, String, Numeric, DateTime, func
 
 from src.db.connection import Base
 
@@ -13,3 +13,4 @@ class Listing(Base):
     stock = Column(Integer, nullable=False)
     category_id = Column(Integer, nullable=True)
     status = Column(String, nullable=False, server_default="Active")
+    created_at = Column(DateTime, nullable=False, server_default=func.now())

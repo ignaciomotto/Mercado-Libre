@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from ..db.models.question_model import Question
 from ..db.models.answer_model import Answer
 from ..db.models.listing_model import Listing
+from ..db.models.user_model import User
 
 from ..mappers.question_mapper import (
     question_create_to_model,
@@ -47,7 +48,7 @@ class QuestionService:
         self.db.commit()
         self.db.refresh(question)
 
-        return question_to_response_dto(question)
+        return question_to_response_dto(question, author_name=self.db.query(User.name).filter(User.id == author_id).scalar())
 
     def get_listing_questions(
         self,
@@ -85,8 +86,30 @@ class QuestionService:
             result.append(
                 question_to_response_dto(
                     question,
-                    answer
+                    answer,
+                    self.db.query(User.name).filter(User.id == question.author_id).scalar()
                 )
             )
 
         return result
+
+    def answer_question(self, question_id: int, seller_id: int, text: str):
+        question = self.db.query(Question).filter(Question.id == question_id).first()
+        if not question:
+            raise ValueError("La pregunta no existe")
+        listing = self.db.query(Listing).filter(Listing.id == question.listing_id).first()
+        if not listing:
+            raise ValueError("La publicación no existe")
+        if listing.seller_id != seller_id:
+            raise ValueError("Solo el vendedor puede responder")
+        if self.db.query(Answer).filter(Answer.question_id == question_id).first():
+            raise ValueError("La pregunta ya tiene una respuesta")
+        answer = Answer(question_id=question_id, text=text)
+        self.db.add(answer)
+        self.db.commit()
+        self.db.refresh(answer)
+        return question_to_response_dto(
+            question,
+            answer,
+            self.db.query(User.name).filter(User.id == question.author_id).scalar()
+        )

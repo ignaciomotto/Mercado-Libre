@@ -14,6 +14,8 @@ from ..dtos.purchase_dto import PurchaseHistoryDTO
 from ..dtos.user_dto import TopSellerDTO
 
 from ..dependencies.auth import get_current_user
+from ..db.models.rating_model import Rating
+from ..schemas.rating_schema import RatingResponseDTO
 
 
 router = APIRouter(
@@ -102,6 +104,13 @@ def get_user_listings(
         )
 
     return listings
+
+@router.get(
+    "/{user_id}/ratings",
+    response_model=list[RatingResponseDTO]
+)
+def get_user_ratings(user_id: int, db: Session = Depends(get_db)):
+    return db.query(Rating).filter(Rating.rated_id == user_id).order_by(Rating.date.desc()).all()
 
 @router.get(
     "/{user_id}",

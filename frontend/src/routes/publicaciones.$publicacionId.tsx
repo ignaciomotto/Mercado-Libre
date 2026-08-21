@@ -166,7 +166,7 @@ function Detalle() {
                 <li key={p.id} className="surface p-4">
                   <p className="text-sm font-semibold">{p.texto}</p>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    Usuario #{p.usuario_id} · {formatearFecha(p.fecha)}
+                    {p.autor_nombre ?? `Usuario #${p.usuario_id}`} · {formatearFecha(p.fecha)}
                   </p>
                   {p.respuesta ? (
                     <div className="mt-3 rounded-lg border-l-4 border-primary bg-secondary/60 p-3">

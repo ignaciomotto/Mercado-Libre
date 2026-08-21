@@ -8,6 +8,7 @@ from ..db.connection import get_db
 from ..db.models.user_model import User
 from ..schemas.user_schema import UserResponse
 from ..dependencies.auth import get_current_user
+from ..services.user_service import UserService
 
 router = APIRouter()
 
@@ -16,9 +17,10 @@ router = APIRouter()
     response_model=UserResponse
 )
 def get_my_profile(
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
 ):
-    return current_user
+    return UserService(db).get_user(current_user.id)
 
 @router.post("/login")
 def login(

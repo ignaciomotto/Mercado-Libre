@@ -13,6 +13,7 @@ class UserResponseDTO(BaseModel):
     name: str
     registration_date: datetime
     reputation: float | None
+    rating_count: int = 0
 
 
 class TopSellerDTO(BaseModel):
@@ -21,3 +22,5 @@ class TopSellerDTO(BaseModel):
     email: EmailStr
     reputation: float
     completed_sales: int
+    registration_date: datetime
+    rating_count: int

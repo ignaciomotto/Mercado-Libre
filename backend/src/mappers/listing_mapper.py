@@ -32,7 +32,8 @@ def listing_to_response_dto(
         price=listing.price,
         stock=listing.stock,
         category_id=listing.category_id,
-        status=listing.status
+        status=listing.status,
+        created_at=getattr(listing, "created_at", None)
     )
 
 
@@ -45,5 +46,10 @@ def listing_to_top_dto(
         title=listing.title,
         price=float(listing.price),
         category_id=listing.category_id,
-        units_sold=units_sold
+        units_sold=units_sold,
+        seller_id=listing.seller_id,
+        description=listing.description,
+        stock=listing.stock,
+        status=listing.status,
+        created_at=getattr(listing, "created_at", None)
     )

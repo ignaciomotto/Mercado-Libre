@@ -51,6 +51,7 @@ CREATE TABLE listing (
     stock INT NOT NULL,
     category_id INT,
     status VARCHAR(20) NOT NULL DEFAULT 'Active',
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT fk_listing_seller
         FOREIGN KEY (seller_id)

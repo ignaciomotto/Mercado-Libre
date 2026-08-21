@@ -1,3 +1,4 @@
+from datetime import datetime
 from pydantic import BaseModel, Field
 from typing import Optional
 
@@ -19,6 +20,7 @@ class ListingResponseSchema(BaseModel):
     stock: int
     category_id: Optional[int] = None
     status: str
+    created_at: datetime | None = None
 
     class Config:
         from_attributes = True

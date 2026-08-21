@@ -16,3 +16,6 @@ class RatingResponseDTO(BaseModel):
     score: int
     comment: str | None
     date: datetime
+
+    class Config:
+        from_attributes = True

@@ -10,7 +10,7 @@ export interface Categoria { id: number; nombre: string; categoria_padre_id: num
 export interface CategoriaNodo extends Categoria { hijas: CategoriaNodo[] }
 export interface Publicacion { id: number; titulo: string; descripcion: string; precio: number; stock: number; estado: EstadoPublicacion; vendedor_id: number; categoria_id: number; fecha_creacion: string; imagen?: string }
 export interface Respuesta { id: number; pregunta_id: number; texto: string; fecha: string }
-export interface Pregunta { id: number; publicacion_id: number; usuario_id: number; texto: string; fecha: string; respuesta: Respuesta | null }
+export interface Pregunta { id: number; publicacion_id: number; usuario_id: number; autor_nombre?: string; texto: string; fecha: string; respuesta: Respuesta | null }
 export interface Compra { id: number; publicacion_id: number; comprador_id: number; cantidad: number; total: number; estado: EstadoCompra; fecha: string }
 export interface CompraDetallada extends Compra { publicacion: Publicacion; vendedor: Usuario }
 export interface Calificacion { id: number; compra_id: number; de_usuario_id: number; para_usuario_id: number; puntaje: number; comentario?: string; fecha: string }
@@ -20,10 +20,10 @@ export interface FiltrosBusqueda { q?: string; categoria?: number; precio_min?: 
 export interface RegistroInput { nombre: string; email: string; password: string }
 export interface PublicacionInput { titulo: string; descripcion: string; precio: number; stock: number; categoria_id: number; vendedor_id: number }
 
-type BackendUser = { id: number; name: string; email: string; registration_date: string; reputation?: number | null };
-type BackendListing = { id: number; seller_id: number; title: string; description: string; price: number; stock: number; category_id: number | null; status: string };
-type BackendQuestion = { id: number; listing_id: number; author_id: number; text: string; date: string; answer?: { id: number; question_id: number; text: string; date: string } | null };
-type BackendPurchaseHistory = { id: number; quantity: number; total_price: number; status: string; date: string; listing_id: number; listing_title: string; listing_description: string; listing_price: number; seller_id: number; seller_name: string; seller_email: string };
+type BackendUser = { id: number; name: string; email: string; registration_date: string; reputation?: number | null; rating_count?: number };
+type BackendListing = { id: number; seller_id: number; title: string; description: string; price: number; stock: number; category_id: number | null; status: string; created_at?: string | null };
+type BackendQuestion = { id: number; listing_id: number; author_id: number; author_name?: string | null; text: string; date: string; answer?: { id: number; question_id: number; text: string; date: string } | null };
+type BackendPurchaseHistory = { id: number; quantity: number; total_price: number; status: string; date: string; listing_id: number; listing_title: string; listing_description: string; listing_price: number; listing_stock: number; listing_category_id: number | null; listing_status: string; seller_id: number; seller_name: string; seller_email: string; seller_registration_date: string; seller_reputation: number | null; seller_rating_count: number };
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${API_URL}${path}`, { ...init, credentials: "include", headers: { "Content-Type": "application/json", ...init?.headers } });
@@ -36,11 +36,11 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return response.json() as Promise<T>;
 }
 
-const mapUser = (user: BackendUser): Usuario => ({ id: user.id, nombre: user.name, email: user.email, reputacion: user.reputation ?? null, cantidad_calificaciones: 0, fecha_registro: user.registration_date });
+const mapUser = (user: BackendUser): Usuario => ({ id: user.id, nombre: user.name, email: user.email, reputacion: user.reputation ?? null, cantidad_calificaciones: user.rating_count ?? 0, fecha_registro: user.registration_date });
 const mapStatus = <T extends string>(status: string): T => status.toLowerCase() as T;
-const mapListing = (listing: BackendListing): Publicacion => ({ id: listing.id, titulo: listing.title, descripcion: listing.description, precio: listing.price, stock: listing.stock, estado: mapStatus<EstadoPublicacion>(listing.status), vendedor_id: listing.seller_id, categoria_id: listing.category_id ?? 0, fecha_creacion: new Date().toISOString() });
+const mapListing = (listing: BackendListing): Publicacion => ({ id: listing.id, titulo: listing.title, descripcion: listing.description, precio: listing.price, stock: listing.stock, estado: mapStatus<EstadoPublicacion>(listing.status), vendedor_id: listing.seller_id, categoria_id: listing.category_id ?? 0, fecha_creacion: listing.created_at ?? new Date().toISOString() });
 const mapCategory = (category: { id: number; name: string; parent_id?: number | null }): Categoria => ({ id: category.id, nombre: category.name, categoria_padre_id: category.parent_id ?? null });
-const mapQuestion = (question: BackendQuestion): Pregunta => ({ id: question.id, publicacion_id: question.listing_id, usuario_id: question.author_id, texto: question.text, fecha: question.date, respuesta: question.answer ? { id: question.answer.id, pregunta_id: question.answer.question_id, texto: question.answer.text, fecha: question.answer.date } : null });
+const mapQuestion = (question: BackendQuestion): Pregunta => ({ id: question.id, publicacion_id: question.listing_id, usuario_id: question.author_id, autor_nombre: question.author_name ?? undefined, texto: question.text, fecha: question.date, respuesta: question.answer ? { id: question.answer.id, pregunta_id: question.answer.question_id, texto: question.answer.text, fecha: question.answer.date } : null });
 const mapPurchase = (purchase: { id: number; buyer_id: number; listing_id: number; quantity: number; total_price: number; status: string; date?: string }): Compra => ({ id: purchase.id, comprador_id: purchase.buyer_id, publicacion_id: purchase.listing_id, cantidad: purchase.quantity, total: purchase.total_price, estado: mapStatus<EstadoCompra>(purchase.status), fecha: purchase.date ?? new Date().toISOString() });
 
 export async function registrarUsuario(input: RegistroInput): Promise<Usuario> {
@@ -84,10 +84,11 @@ export async function responderPregunta(preguntaId: number, usuarioId: number, t
 
 export async function comprar(publicacionId: number, compradorId: number, cantidad: number): Promise<Compra> { return mapPurchase(await request(`/purchases/?buyer_id=${compradorId}`, { method: "POST", body: JSON.stringify({ listing_id: publicacionId, quantity: cantidad }) })); }
 export async function cancelarCompra(compraId: number): Promise<Compra> { return mapPurchase(await request(`/purchases/${compraId}/cancel`, { method: "PUT" })); }
+export async function completarCompra(compraId: number): Promise<Compra> { return mapPurchase(await request(`/purchases/${compraId}/complete`, { method: "PUT" })); }
 export async function getComprasDeUsuario(usuarioId: number, estado?: EstadoCompra): Promise<CompraDetallada[]> {
-  const params = estado ? `?status=${encodeURIComponent(estado)}` : "";
+  const params = estado ? `?status=${encodeURIComponent(estado[0].toUpperCase() + estado.slice(1))}` : "";
   const purchases = await request<BackendPurchaseHistory[]>(`/users/${usuarioId}/purchases${params}`);
-  return purchases.map((purchase) => ({ ...mapPurchase({ ...purchase, buyer_id: usuarioId, listing_id: purchase.listing_id }), publicacion: { id: purchase.listing_id, vendedor_id: purchase.seller_id, titulo: purchase.listing_title, descripcion: purchase.listing_description, precio: purchase.listing_price, stock: 0, categoria_id: 0, estado: "activa", fecha_creacion: purchase.date }, vendedor: { id: purchase.seller_id, nombre: purchase.seller_name, email: purchase.seller_email, reputacion: null, cantidad_calificaciones: 0, fecha_registro: purchase.date } }));
+  return purchases.map((purchase) => ({ ...mapPurchase({ ...purchase, buyer_id: usuarioId, listing_id: purchase.listing_id }), publicacion: { id: purchase.listing_id, vendedor_id: purchase.seller_id, titulo: purchase.listing_title, descripcion: purchase.listing_description, precio: purchase.listing_price, stock: purchase.listing_stock, categoria_id: purchase.listing_category_id ?? 0, estado: mapStatus<EstadoPublicacion>(purchase.listing_status), fecha_creacion: purchase.date }, vendedor: { id: purchase.seller_id, nombre: purchase.seller_name, email: purchase.seller_email, reputacion: purchase.seller_reputation, cantidad_calificaciones: purchase.seller_rating_count, fecha_registro: purchase.seller_registration_date } }));
 }
 
 export async function calificar(compraId: number, deUsuarioId: number, puntaje: number, comentario?: string): Promise<Calificacion> {
@@ -95,13 +96,17 @@ export async function calificar(compraId: number, deUsuarioId: number, puntaje: 
   return { id: rating.id, compra_id: rating.purchase_id, de_usuario_id: rating.rater_id, para_usuario_id: rating.rated_id, puntaje: rating.score, comentario: rating.comment, fecha: rating.date };
 }
 export async function getUsuario(id: number): Promise<Usuario | undefined> { return mapUser(await request<BackendUser>(`/users/${id}`)); }
+export async function getCalificacionesUsuario(id: number): Promise<Calificacion[]> {
+  const ratings = await request<Array<{ id: number; purchase_id: number; rater_id: number; rated_id: number; score: number; comment?: string; date: string }>>(`/users/${id}/ratings`);
+  return ratings.map((rating) => ({ id: rating.id, compra_id: rating.purchase_id, de_usuario_id: rating.rater_id, para_usuario_id: rating.rated_id, puntaje: rating.score, comentario: rating.comment, fecha: rating.date }));
+}
 export async function getTopVendedores(): Promise<VendedorTop[]> {
-  const sellers = await request<Array<{ id: number; name: string; email: string; reputation: number; completed_sales: number }>>("/users/sellers/top");
-  return sellers.map((seller) => ({ usuario: { id: seller.id, nombre: seller.name, email: seller.email, reputacion: seller.reputation, cantidad_calificaciones: 0, fecha_registro: "" }, ventas_finalizadas: seller.completed_sales }));
+  const sellers = await request<Array<{ id: number; name: string; email: string; reputation: number; completed_sales: number; registration_date: string; rating_count: number }>>("/users/sellers/top");
+  return sellers.map((seller) => ({ usuario: { id: seller.id, nombre: seller.name, email: seller.email, reputacion: seller.reputation, cantidad_calificaciones: seller.rating_count, fecha_registro: seller.registration_date }, ventas_finalizadas: seller.completed_sales }));
 }
 export async function getTopPublicacionesCategoria(categoriaId: number): Promise<PublicacionVendida[]> {
-  const listings = await request<Array<{ listing_id: number; title: string; price: number; category_id: number; units_sold: number }>>(`/categories/${categoriaId}/top-listings`);
-  return listings.map((listing) => ({ publicacion: { id: listing.listing_id, titulo: listing.title, descripcion: "", precio: listing.price, stock: 0, estado: "activa" as EstadoPublicacion, vendedor_id: 0, categoria_id: listing.category_id, fecha_creacion: "" }, unidades_vendidas: listing.units_sold }));
+  const listings = await request<Array<{ listing_id: number; title: string; description: string; price: number; stock: number; category_id: number; seller_id: number; status: string; created_at?: string; units_sold: number }>>(`/categories/${categoriaId}/top-listings`);
+  return listings.map((listing) => ({ publicacion: { id: listing.listing_id, titulo: listing.title, descripcion: listing.description, precio: listing.price, stock: listing.stock, estado: mapStatus<EstadoPublicacion>(listing.status), vendedor_id: listing.seller_id, categoria_id: listing.category_id, fecha_creacion: listing.created_at ?? new Date().toISOString() }, unidades_vendidas: listing.units_sold }));
 }
 
 export const formatearPrecio = (valor: number) => new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS", maximumFractionDigits: 0 }).format(valor);

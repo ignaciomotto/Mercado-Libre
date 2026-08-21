@@ -34,7 +34,9 @@ def purchase_to_response_dto(purchase):
 def purchase_to_history_dto(
     purchase,
     listing,
-    seller
+    seller,
+    seller_reputation=None,
+    seller_rating_count=0
 ):
     return PurchaseHistoryDTO(
         id=purchase.id,
@@ -50,5 +52,11 @@ def purchase_to_history_dto(
 
         seller_id=seller.id,
         seller_name=seller.name,
-        seller_email=seller.email
+        seller_email=seller.email,
+        listing_stock=listing.stock,
+        listing_category_id=listing.category_id,
+        listing_status=listing.status,
+        seller_registration_date=seller.registration_date,
+        seller_reputation=seller_reputation,
+        seller_rating_count=seller_rating_count
     )

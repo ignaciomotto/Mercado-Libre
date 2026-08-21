@@ -24,7 +24,7 @@ class UserService:
         users = self.db.query(User).all()
 
         return [
-            user_to_response_dto(user)
+            user_to_response_dto(user, self.get_user_reputation(user.id), self.get_user_rating_count(user.id))
             for user in users
         ]
 
@@ -39,10 +39,12 @@ class UserService:
             return None
 
         reputation = self.get_user_reputation(user_id)
+        rating_count = self.get_user_rating_count(user_id)
 
         return user_to_response_dto(
             user,
-            reputation
+            reputation,
+            rating_count
         )
 
     def get_user_listings(self, user_id: int):
@@ -84,7 +86,7 @@ class UserService:
         self.db.commit()
         self.db.refresh(user)
 
-        return user_to_response_dto(user)
+        return user_to_response_dto(user, self.get_user_reputation(user_id), self.get_user_rating_count(user_id))
 
     def update_user(
         self,
@@ -212,7 +214,9 @@ class UserService:
                 purchase_to_history_dto(
                     purchase,
                     listing,
-                    seller
+                    seller,
+                    self.get_user_reputation(seller.id),
+                    self.get_user_rating_count(seller.id)
                 )
             )
 
@@ -234,6 +238,9 @@ class UserService:
             return None
 
         return round(float(average), 2)
+
+    def get_user_rating_count(self, user_id: int):
+        return self.db.query(func.count(Rating.id)).filter(Rating.rated_id == user_id).scalar() or 0
 
     def get_top_sellers(self):
         reputation_subquery = (
@@ -294,7 +301,9 @@ class UserService:
                 name=user.name,
                 email=user.email,
                 reputation=round(float(reputation), 2),
-                completed_sales=completed_sales
+                completed_sales=completed_sales,
+                registration_date=user.registration_date,
+                rating_count=int(self.get_user_rating_count(user.id))
             )
             for user, reputation, completed_sales in results
         ]

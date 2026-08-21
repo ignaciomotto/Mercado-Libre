@@ -25,6 +25,7 @@ class QuestionResponseDTO(BaseModel):
     text: str
     date: datetime
     answer: AnswerResponseDTO | None = None
+    author_name: str | None = None
 
     class Config:
         from_attributes = True
