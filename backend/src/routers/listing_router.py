@@ -2,8 +2,12 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from ..db.connection import get_db
+from ..db.models.user_model import User
 from ..schemas.listing_schema import ListingCreateSchema, ListingResponseSchema, ListingUpdate
 from ..services.listing_service import ListingService
+
+from ..dependencies.auth import get_current_user
+from ..repositories.listing_repository import ListingRepository
 
 
 router = APIRouter(
@@ -19,8 +23,15 @@ router = APIRouter(
 )
 def create_listing(
     listing: ListingCreateSchema,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    if not current_user.id in (listing.seller_id, 1):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User not authenticated"
+        )
+    
     service = ListingService(db)
 
     return service.create_listing(listing)
@@ -32,7 +43,7 @@ def create_listing(
 )
 def get_listings(
     db: Session = Depends(get_db)
-):
+):  
     service = ListingService(db)
 
     return service.get_listings()
@@ -81,8 +92,15 @@ def get_listing(
 def update_listing(
     listing_id: int,
     listing: ListingUpdate,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    if not current_user.id in (listing.seller_id, 1):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User not authenticated"
+        )
+    
     service = ListingService(db)
 
     updated_listing = service.update_listing(
@@ -105,8 +123,15 @@ def update_listing(
 )
 def delete_listing(
     listing_id: int,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    if not current_user.id in (ListingRepository.get_seller_id_by_listing_id(db, listing_id), 1):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User not authenticated"
+        )
+    
     service = ListingService(db)
 
     deleted = service.delete_listing(listing_id)

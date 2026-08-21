@@ -7,10 +7,14 @@ from ..schemas.user_schema import (
     UserUpdate,
     UserResponse
 )
+from ..db.models.user_model import User
 from ..services.user_service import UserService
 from ..schemas.listing_schema import ListingResponseSchema
 from ..dtos.purchase_dto import PurchaseHistoryDTO
 from ..dtos.user_dto import TopSellerDTO
+
+from ..dependencies.auth import get_current_user
+
 
 router = APIRouter(
     prefix="/users",
@@ -47,8 +51,16 @@ def get_top_sellers(
 def get_user_purchase_history(
     user_id: int,
     status: str | None = None,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    if not current_user.id in (user_id, 1):
+        raise HTTPException(
+            status_code=401,
+            detail="Credenciales incorrectas"
+        )
+
+    
     service = UserService(db)
 
     try:
@@ -140,11 +152,18 @@ def create_user(
 def update_user(
     user_id: int,
     user_data: UserUpdate,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     service = UserService(db)
 
     try:
+        if not current_user.id in (user_id, 1):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="User not authenticated"
+            )
+
         user = service.update_user(
             user_id,
             user_data
@@ -171,8 +190,15 @@ def update_user(
 )
 def delete_user(
     user_id: int,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    if not current_user.id in (user_id, 1):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User not authenticated"
+        )
+    
     service = UserService(db)
 
     deleted = service.delete_user(user_id)

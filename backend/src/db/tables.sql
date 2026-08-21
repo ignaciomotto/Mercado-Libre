@@ -173,6 +173,17 @@ CREATE TABLE rating (
         UNIQUE (purchase_id, rater_id, rated_id)
 );
 
+CREATE TABLE session (
+    id SERIAL PRIMARY KEY,
+    token VARCHAR(255) NOT NULL UNIQUE,
+    user_id INTEGER NOT NULL,
+    expires_at TIMESTAMP NOT NULL,
+
+    CONSTRAINT fk_sessions_user
+        FOREIGN KEY (user_id)
+        REFERENCES users(id)
+        ON DELETE CASCADE
+);
 
 -- ============================================================
 -- Indexes

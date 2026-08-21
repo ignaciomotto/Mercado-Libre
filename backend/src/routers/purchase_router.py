@@ -6,7 +6,10 @@ from ..schemas.purchase_schema import (
     PurchaseCreate,
     PurchaseResponse
 )
+from ..db.models.user_model import User
 from ..services.purchase_service import PurchaseService
+from ..dependencies.auth import get_current_user
+from ..repositories.purchase_repository import PurchaseRepository
 
 
 router = APIRouter(
@@ -20,8 +23,15 @@ router = APIRouter(
     response_model=list[PurchaseResponse]
 )
 def get_purchases(
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    if current_user.id != 1:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User not authenticated"
+        )
+    
     service = PurchaseService(db)
 
     return service.get_purchases()
@@ -33,8 +43,15 @@ def get_purchases(
 )
 def get_purchase(
     purchase_id: int,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    if not current_user.id in (PurchaseRepository.get_buyer_id_by_purchase_id(db, purchase_id), 1):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User not authenticated"
+        )
+    
     service = PurchaseService(db)
 
     purchase = service.get_purchase(purchase_id)
@@ -56,8 +73,15 @@ def get_purchase(
 def create_purchase(
     purchase_data: PurchaseCreate,
     buyer_id: int,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    if not current_user.id in (buyer_id, 1):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User not authenticated"
+        )
+    
     service = PurchaseService(db)
 
     try:
@@ -78,8 +102,15 @@ def create_purchase(
 )
 def complete_purchase(
     purchase_id: int,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    if not current_user.id in (PurchaseRepository.get_buyer_id_by_purchase_id(db, purchase_id), 1):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User not authenticated"
+        )
+    
     service = PurchaseService(db)
 
     try:
@@ -107,8 +138,15 @@ def complete_purchase(
 )
 def cancel_purchase(
     purchase_id: int,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    if not current_user.id in (PurchaseRepository.get_buyer_id_by_purchase_id(db, purchase_id), 1):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User not authenticated"
+        )
+    
     service = PurchaseService(db)
 
     try:

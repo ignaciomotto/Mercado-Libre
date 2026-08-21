@@ -2,6 +2,10 @@ from datetime import datetime
 from pydantic import BaseModel
 
 
+class QuestionCreateDTO(BaseModel):
+    text: str
+
+
 class AnswerCreateDTO(BaseModel):
     text: str
 
@@ -12,11 +16,6 @@ class AnswerResponseDTO(BaseModel):
     text: str
     date: datetime
 
-class QuestionCreateDTO(BaseModel):
-    listing_id: int
-    author_id: int
-    text: str
-
 
 class QuestionResponseDTO(BaseModel):
     id: int
@@ -25,6 +24,3 @@ class QuestionResponseDTO(BaseModel):
     text: str
     date: datetime
     answer: AnswerResponseDTO | None = None
-
-    class Config:
-        from_attributes = True

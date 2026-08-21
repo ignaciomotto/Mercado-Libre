@@ -18,5 +18,4 @@ class UserResponse(BaseModel):
     id: int
     email: EmailStr
     name: str
-    reputation: float | None
     registration_date: datetime

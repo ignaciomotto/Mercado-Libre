@@ -8,9 +8,10 @@ from ..schemas.category_schema import (
     CategoryResponse,
     CategoryTreeResponse
 )
+from ..db.models.user_model import User
 from ..services.category_service import CategoryService
 from ..dtos.listing_dto import TopListingDTO
-
+from ..dependencies.auth import get_current_user
 
 router = APIRouter(
     prefix="/categories",
@@ -89,8 +90,15 @@ def get_category(
 )
 def create_category(
     category_data: CategoryCreate,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    if current_user.id != 1:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User not authenticated"
+        )
+    
     service = CategoryService(db)
 
     try:
@@ -110,8 +118,15 @@ def create_category(
 def update_category(
     category_id: int,
     category_data: CategoryUpdate,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    if current_user.id != 1:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User not authenticated"
+        )
+    
     service = CategoryService(db)
 
     try:
@@ -141,8 +156,15 @@ def update_category(
 )
 def delete_category(
     category_id: int,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    if current_user.id != 1:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User not authenticated"
+        )
+
     service = CategoryService(db)
 
     deleted = service.delete_category(category_id)

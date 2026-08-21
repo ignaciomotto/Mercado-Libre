@@ -20,7 +20,7 @@ class UserService:
     def __init__(self, db: Session):
         self.db = db
 
-    def get_users(self):
+    def get_users(self):        
         users = self.db.query(User).all()
 
         return [
@@ -298,4 +298,3 @@ class UserService:
             )
             for user, reputation, completed_sales in results
         ]
-    

@@ -1,9 +1,27 @@
-from src.models.question import Question
-from src.dtos.question import (
+from ..db.models.question_model import Question
+from ..dtos.question_dto import (
     QuestionCreateDTO,
-    QuestionResponseDTO
+    QuestionResponseDTO,
+    AnswerCreateDTO,
+    AnswerResponseDTO
 )
 
+def answer_create_to_model(
+    question_id: int,
+    text: str
+):
+    return AnswerCreateDTO(
+        question_id=question_id,
+        text=text
+    )
+
+def answer_to_schema(answer):
+    return AnswerResponseDTO(
+        id=answer.id,
+        question_id=answer.question_id,
+        text=answer.text,
+        date=answer.date
+    )
 
 def question_create_to_model(
     dto: QuestionCreateDTO,
@@ -18,7 +36,8 @@ def question_create_to_model(
 
 
 def question_to_response_dto(
-    question: Question
+    question: Question,
+    answer=None
 ) -> QuestionResponseDTO:
 
     return QuestionResponseDTO(
@@ -27,5 +46,5 @@ def question_to_response_dto(
         author_id=question.author_id,
         text=question.text,
         date=question.date,
-        answer=None
+        answer=answer_to_schema(answer) if answer else None
     )
