@@ -10,9 +10,8 @@ import {
   formatearPrecio,
   getPreguntas,
   getPublicacion,
-  getUsuarioSync,
+  getUsuario,
   responderPregunta,
-  rutaCategoria,
 } from "@/lib/api";
 import { useSession } from "@/lib/session";
 
@@ -47,6 +46,11 @@ function Detalle() {
   const { data: preguntas = [] } = useQuery({
     queryKey: ["preguntas", id],
     queryFn: () => getPreguntas(id),
+  });
+  const { data: vendedor } = useQuery({
+    queryKey: ["usuario", publicacion?.vendedor_id],
+    queryFn: () => getUsuario(publicacion!.vendedor_id),
+    enabled: !!publicacion,
   });
 
   const refrescar = () => {
@@ -93,7 +97,6 @@ function Detalle() {
     );
   }
 
-  const vendedor = getUsuarioSync(publicacion.vendedor_id);
   const esVendedor = usuario?.id === publicacion.vendedor_id;
 
   return (
@@ -101,7 +104,7 @@ function Detalle() {
       <div className="mx-auto grid w-full max-w-6xl gap-8 px-4 py-10 lg:grid-cols-[1.6fr_1fr]">
         <div>
           <nav className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            {rutaCategoria(publicacion.categoria_id).map((c) => c.nombre).join(" › ")}
+            Categoría #{publicacion.categoria_id}
           </nav>
           <h1 className="mt-3 text-3xl font-extrabold">{publicacion.titulo}</h1>
           <div className="mt-2 flex items-center gap-3 text-sm text-muted-foreground">
@@ -163,7 +166,7 @@ function Detalle() {
                 <li key={p.id} className="surface p-4">
                   <p className="text-sm font-semibold">{p.texto}</p>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    {getUsuarioSync(p.usuario_id)?.nombre} · {formatearFecha(p.fecha)}
+                    Usuario #{p.usuario_id} · {formatearFecha(p.fecha)}
                   </p>
                   {p.respuesta ? (
                     <div className="mt-3 rounded-lg border-l-4 border-primary bg-secondary/60 p-3">

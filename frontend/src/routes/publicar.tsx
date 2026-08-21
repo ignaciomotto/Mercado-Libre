@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { AppLayout } from "@/components/AppLayout";
-import { crearPublicacion, db, esHoja, rutaCategoria } from "@/lib/api";
+import { crearPublicacion, getCategorias } from "@/lib/api";
 import { useSession } from "@/lib/session";
 
 export const Route = createFileRoute("/publicar")({
@@ -27,7 +27,9 @@ function Publicar() {
   const [categoriaId, setCategoriaId] = useState("");
   const [error, setError] = useState<string | null>(null);
 
-  const hojas = db.categorias.filter((c) => esHoja(c.id));
+  const { data: categorias = [] } = useQuery({ queryKey: ["categorias"], queryFn: getCategorias });
+  const padres = new Set(categorias.map((categoria) => categoria.categoria_padre_id).filter((id): id is number => id != null));
+  const hojas = categorias.filter((categoria) => !padres.has(categoria.id));
 
   const mut = useMutation({
     mutationFn: () =>
@@ -102,7 +104,7 @@ function Publicar() {
               <option value="">Elegí una categoría…</option>
               {hojas.map((c) => (
                 <option key={c.id} value={c.id}>
-                  {rutaCategoria(c.id).map((x) => x.nombre).join(" › ")}
+                  {c.nombre}
                 </option>
               ))}
             </select>

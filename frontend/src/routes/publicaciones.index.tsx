@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { SearchX } from "lucide-react";
 import { AppLayout } from "@/components/AppLayout";
 import { PublicacionCard } from "@/components/PublicacionCard";
-import { buscarPublicaciones, db, rutaCategoria, type FiltrosBusqueda } from "@/lib/api";
+import { buscarPublicaciones, getCategorias, type FiltrosBusqueda } from "@/lib/api";
 
 export const Route = createFileRoute("/publicaciones/")({
   head: () => ({
@@ -38,6 +38,7 @@ function Buscar() {
     queryKey: ["publicaciones", filtros],
     queryFn: () => buscarPublicaciones(filtros),
   });
+  const { data: categorias = [] } = useQuery({ queryKey: ["categorias"], queryFn: getCategorias });
 
   return (
     <AppLayout>
@@ -62,9 +63,9 @@ function Buscar() {
             aria-label="Categoría"
           >
             <option value="">Todas las categorías</option>
-            {db.categorias.map((c) => (
+            {categorias.map((c) => (
               <option key={c.id} value={c.id}>
-                {rutaCategoria(c.id).map((x) => x.nombre).join(" › ")}
+                {c.nombre}
               </option>
             ))}
           </select>

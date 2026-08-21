@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { db, type Usuario } from "./api";
+import { cerrarSesion, getUsuarioActual, type Usuario } from "./api";
 
 interface SessionValue {
   usuario: Usuario | null;
@@ -22,12 +22,14 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const [listo, setListo] = useState(false);
 
   useEffect(() => {
-    const guardado = window.localStorage.getItem(STORAGE_KEY);
-    if (guardado) {
-      const id = Number(guardado);
-      setUsuario(db.usuarios.find((u) => u.id === id) ?? null);
+    if (!window.localStorage.getItem(STORAGE_KEY)) {
+      setListo(true);
+      return;
     }
-    setListo(true);
+    getUsuarioActual()
+      .then(setUsuario)
+      .catch(() => window.localStorage.removeItem(STORAGE_KEY))
+      .finally(() => setListo(true));
   }, []);
 
   const iniciar = useCallback((nuevo: Usuario) => {
@@ -36,6 +38,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const cerrar = useCallback(() => {
+    void cerrarSesion().catch(() => undefined);
     window.localStorage.removeItem(STORAGE_KEY);
     setUsuario(null);
   }, []);

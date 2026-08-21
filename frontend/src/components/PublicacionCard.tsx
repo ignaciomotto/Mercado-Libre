@@ -1,10 +1,7 @@
 import { Link } from "@tanstack/react-router";
-import { formatearPrecio, getUsuarioSync, rutaCategoria, type Publicacion } from "@/lib/api";
+import { formatearPrecio, type Publicacion } from "@/lib/api";
 
 export function PublicacionCard({ publicacion }: { publicacion: Publicacion }) {
-  const vendedor = getUsuarioSync(publicacion.vendedor_id);
-  const ruta = rutaCategoria(publicacion.categoria_id);
-
   return (
     <Link
       to="/publicaciones/$publicacionId"
@@ -12,7 +9,7 @@ export function PublicacionCard({ publicacion }: { publicacion: Publicacion }) {
       className="surface group flex flex-col p-4 transition-shadow hover:shadow-[var(--shadow-lift)]"
     >
       <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-        {ruta.map((c) => c.nombre).join(" › ")}
+        Categoría #{publicacion.categoria_id}
       </p>
       <h3 className="mt-2 line-clamp-2 font-display text-base font-bold leading-snug">
         {publicacion.titulo}
@@ -20,7 +17,7 @@ export function PublicacionCard({ publicacion }: { publicacion: Publicacion }) {
       <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{publicacion.descripcion}</p>
       <p className="mt-4 text-2xl font-extrabold">{formatearPrecio(publicacion.precio)}</p>
       <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
-        <span>{vendedor?.nombre}</span>
+        <span>Vendedor #{publicacion.vendedor_id}</span>
         <span
           className={
             publicacion.estado === "activa"
