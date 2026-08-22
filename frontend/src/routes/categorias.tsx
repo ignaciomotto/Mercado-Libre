@@ -13,9 +13,9 @@ import {
 export const Route = createFileRoute("/categorias")({
   head: () => ({
     meta: [
-      { title: "Árbol de categorías — Feria" },
+      { title: "Árbol de categorías — Bazar Libre" },
       { name: "description", content: "Explorá el árbol completo de categorías y las publicaciones más vendidas de cada rama." },
-      { property: "og:title", content: "Árbol de categorías — Feria" },
+      { property: "og:title", content: "Árbol de categorías — Bazar Libre" },
       { property: "og:description", content: "Categorías jerárquicas y top de publicaciones vendidas por rama." },
     ],
   }),

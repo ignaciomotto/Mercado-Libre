@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { cerrarSesion, getUsuarioActual, type Usuario } from "./api";
 
 interface SessionValue {
@@ -20,19 +20,28 @@ const STORAGE_KEY = "marketplace.sesion";
 export function SessionProvider({ children }: { children: ReactNode }) {
   const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [listo, setListo] = useState(false);
+  const sessionVersion = useRef(0);
 
   useEffect(() => {
-    if (!window.localStorage.getItem(STORAGE_KEY)) {
-      setListo(true);
-      return;
-    }
+    const requestVersion = sessionVersion.current;
     getUsuarioActual()
-      .then(setUsuario)
-      .catch(() => window.localStorage.removeItem(STORAGE_KEY))
-      .finally(() => setListo(true));
+      .then((usuarioActual) => {
+        if (requestVersion !== sessionVersion.current) return;
+        window.localStorage.setItem(STORAGE_KEY, String(usuarioActual.id));
+        setUsuario(usuarioActual);
+      })
+      .catch(() => {
+        if (requestVersion !== sessionVersion.current) return;
+        window.localStorage.removeItem(STORAGE_KEY);
+        setUsuario(null);
+      })
+      .finally(() => {
+        if (requestVersion === sessionVersion.current) setListo(true);
+      });
   }, []);
 
   const iniciar = useCallback((nuevo: Usuario) => {
+    sessionVersion.current += 1;
     window.localStorage.setItem(STORAGE_KEY, String(nuevo.id));
     setUsuario(nuevo);
   }, []);

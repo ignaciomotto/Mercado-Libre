@@ -8,9 +8,9 @@ import { formatearFecha, getPublicacionesDeUsuario, getUsuario } from "@/lib/api
 export const Route = createFileRoute("/usuarios/$usuarioId")({
   head: () => ({
     meta: [
-      { title: "Perfil de usuario — Feria" },
-      { name: "description", content: "Reputación calculada, fecha de registro y publicaciones del vendedor en Feria." },
-      { property: "og:title", content: "Perfil de usuario — Feria" },
+      { title: "Perfil de usuario — Bazar Libre" },
+      { name: "description", content: "Reputación calculada, fecha de registro y publicaciones del vendedor en Bazar Libre." },
+      { property: "og:title", content: "Perfil de usuario — Bazar Libre" },
       { property: "og:description", content: "Mirá la reputación y las publicaciones de este usuario." },
     ],
   }),

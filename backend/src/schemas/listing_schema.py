@@ -21,14 +21,17 @@ class ListingResponseSchema(BaseModel):
     category_id: Optional[int] = None
     status: str
     created_at: datetime | None = None
+    image_url: str | None = None
+    seller_name: str | None = None
+    category_name: str | None = None
 
     class Config:
         from_attributes = True
 
 class ListingUpdate(BaseModel):
-    title: Optional[str] = None
+    title: Optional[str] = Field(default=None, min_length=1, max_length=200)
     description: Optional[str] = None
-    price: Optional[float] = None
-    stock: Optional[int] = None
+    price: Optional[float] = Field(default=None, gt=0)
+    stock: Optional[int] = Field(default=None, gt=0)
     category_id: Optional[int] = None
     status: Optional[str] = None

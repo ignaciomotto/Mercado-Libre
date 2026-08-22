@@ -3,6 +3,7 @@ from sqlalchemy import or_
 
 from ..db.models.listing_model import Listing
 from ..db.models.category_model import Category
+from ..db.models.user_model import User
 from ..schemas.listing_schema import ListingCreateSchema, ListingUpdate
 from ..mappers.listing_mapper import listing_create_to_model, listing_to_response_dto
 
@@ -11,11 +12,16 @@ class ListingService:
     def __init__(self, db: Session):
         self.db = db
 
+    def _listing_response(self, listing: Listing):
+        seller_name = self.db.query(User.name).filter(User.id == listing.seller_id).scalar()
+        category_name = self.db.query(Category.name).filter(Category.id == listing.category_id).scalar() if listing.category_id else None
+        return listing_to_response_dto(listing, seller_name, category_name)
+
     def get_listings(self):
         listings = self.db.query(Listing).all()
 
         return [
-            listing_to_response_dto(listing)
+            self._listing_response(listing)
             for listing in listings
         ]
 
@@ -29,7 +35,7 @@ class ListingService:
         if not listing:
             return None
 
-        return listing_to_response_dto(listing)
+        return self._listing_response(listing)
 
     def create_listing(self, listing_data: ListingCreateSchema):
         listing = listing_create_to_model(listing_data)
@@ -38,7 +44,7 @@ class ListingService:
         self.db.commit()
         self.db.refresh(listing)
 
-        return listing_to_response_dto(listing)
+        return self._listing_response(listing)
 
     def update_listing(
         self,
@@ -64,7 +70,7 @@ class ListingService:
         self.db.commit()
         self.db.refresh(listing)
 
-        return listing_to_response_dto(listing)
+        return self._listing_response(listing)
 
     def delete_listing(self, listing_id: int):
         listing = (
@@ -137,6 +143,6 @@ class ListingService:
         listings = query.all()
 
         return [
-            listing_to_response_dto(listing)
+            self._listing_response(listing)
             for listing in listings
         ]

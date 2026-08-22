@@ -10,6 +10,7 @@ from ..mappers.category_mapper import (
     category_to_response_dto,
     category_to_tree_dto
 )
+from ..db.models.user_model import User
 from ..schemas.category_schema import CategoryCreate, CategoryUpdate
 
 
@@ -234,7 +235,9 @@ class CategoryService:
         return [
             listing_to_top_dto(
                 listing,
-                int(units_sold)
+                int(units_sold),
+                self.db.query(User.name).filter(User.id == listing.seller_id).scalar(),
+                self.db.query(Category.name).filter(Category.id == listing.category_id).scalar()
             )
             for listing, units_sold in results
         ]

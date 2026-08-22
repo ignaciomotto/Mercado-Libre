@@ -52,6 +52,7 @@ CREATE TABLE listing (
     category_id INT,
     status VARCHAR(20) NOT NULL DEFAULT 'Active',
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    image_url VARCHAR(500),
 
     CONSTRAINT fk_listing_seller
         FOREIGN KEY (seller_id)

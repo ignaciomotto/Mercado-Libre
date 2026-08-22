@@ -1,11 +1,12 @@
 from src.db.models.user_model import User
 from src.dtos.user_dto import UserCreateDTO, UserResponseDTO
+from src.utils.hash import hash_password
 
 
 def user_create_to_model(dto: UserCreateDTO) -> User:
     return User(
         email=dto.email,
-        password=dto.password,
+        password=hash_password(dto.password),
         name=dto.name
     )
 

@@ -7,10 +7,10 @@ import { useSession } from "@/lib/session";
 export const Route = createFileRoute("/registro")({
   head: () => ({
     meta: [
-      { title: "Crear cuenta — Feria" },
-      { name: "description", content: "Registrate en Feria para comprar y vender. El email es único y tu reputación arranca en cero." },
-      { property: "og:title", content: "Crear cuenta — Feria" },
-      { property: "og:description", content: "Registrate gratis para comprar y vender en Feria." },
+      { title: "Crear cuenta — Bazar Libre" },
+      { name: "description", content: "Registrate en Bazar Libre para comprar y vender. El email es único y tu reputación arranca en cero." },
+      { property: "og:title", content: "Crear cuenta — Bazar Libre" },
+      { property: "og:description", content: "Registrate gratis para comprar y vender en Bazar Libre." },
     ],
   }),
   component: Registro,
@@ -48,7 +48,7 @@ function Registro() {
             <span className="grid size-8 place-items-center rounded-lg bg-primary text-primary-foreground">
               <Store className="size-4" />
             </span>
-            Feria
+            Bazar Libre
           </Link>
           <h1 className="text-3xl font-extrabold">Crear cuenta</h1>
           <p className="mt-2 text-sm text-muted-foreground">
@@ -120,7 +120,7 @@ function Registro() {
           <span className="grid size-8 place-items-center rounded-lg bg-ink text-ink-foreground">
             <Store className="size-4" />
           </span>
-          Feria
+          Bazar Libre
         </Link>
         <div>
           <h2 className="max-w-sm text-4xl font-extrabold leading-tight">
@@ -131,7 +131,7 @@ function Registro() {
             termine.
           </p>
         </div>
-        <p className="text-xs opacity-60">© {new Date().getFullYear()} Feria</p>
+        <p className="text-xs opacity-60">© {new Date().getFullYear()} Bazar Libre</p>
       </div>
     </div>
   );

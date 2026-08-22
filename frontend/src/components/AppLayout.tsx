@@ -21,7 +21,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
             <span className="grid size-8 place-items-center rounded-lg bg-primary text-primary-foreground">
               <Store className="size-4" />
             </span>
-            Feria
+            Bazar Libre
           </Link>
 
           <nav className="hidden items-center gap-1 md:flex">
@@ -93,7 +93,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
 
       <footer className="border-t border-border py-8">
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-2 px-4 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-          <p>Feria — marketplace de compra y venta entre personas.</p>
+          <p>Bazar Libre — marketplace de compra y venta entre personas.</p>
           <p>Frontend demo con datos de ejemplo.</p>
         </div>
       </footer>

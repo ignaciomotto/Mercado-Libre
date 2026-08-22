@@ -21,6 +21,9 @@ class ListingResponseDTO(BaseModel):
     category_id: int | None
     status: str
     created_at: datetime | None = None
+    image_url: str | None = None
+    seller_name: str | None = None
+    category_name: str | None = None
 
 
 class TopListingDTO(BaseModel):
@@ -34,3 +37,10 @@ class TopListingDTO(BaseModel):
     stock: int
     status: str
     created_at: datetime | None = None
+    image_url: str | None = None
+    seller_name: str | None = None
+    category_name: str | None = None
+    seller_name: str | None = None
+    category_name: str | None = None
+    seller_name: str | None = None
+    category_name: str | None = None

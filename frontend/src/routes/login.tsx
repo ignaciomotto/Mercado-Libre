@@ -7,10 +7,10 @@ import { useSession } from "@/lib/session";
 export const Route = createFileRoute("/login")({
   head: () => ({
     meta: [
-      { title: "Iniciar sesión — Feria" },
-      { name: "description", content: "Ingresá a tu cuenta de Feria para comprar, vender y responder preguntas." },
-      { property: "og:title", content: "Iniciar sesión — Feria" },
-      { property: "og:description", content: "Ingresá a tu cuenta de Feria para comprar y vender." },
+      { title: "Iniciar sesión — Bazar Libre" },
+      { name: "description", content: "Ingresá a tu cuenta de Bazar Libre para comprar, vender y responder preguntas." },
+      { property: "og:title", content: "Iniciar sesión — Bazar Libre" },
+      { property: "og:description", content: "Ingresá a tu cuenta de Bazar Libre para comprar y vender." },
     ],
   }),
   component: Login,
@@ -46,17 +46,17 @@ function Login() {
           <span className="grid size-8 place-items-center rounded-lg bg-primary text-primary-foreground">
             <Store className="size-4" />
           </span>
-          Feria
+          Bazar Libre
         </Link>
         <div>
           <h2 className="max-w-sm text-4xl font-extrabold leading-tight">
-            Volvé a tu feria: tus ventas, preguntas y compras te esperan.
+            Volvé a Bazar Libre: tus ventas, preguntas y compras te esperan.
           </h2>
           <p className="mt-4 max-w-sm text-sm opacity-70">
             Tu reputación se calcula con el promedio de las calificaciones que recibís.
           </p>
         </div>
-        <p className="text-xs opacity-50">© {new Date().getFullYear()} Feria</p>
+        <p className="text-xs opacity-50">© {new Date().getFullYear()} Bazar Libre</p>
       </div>
 
       <div className="flex items-center justify-center px-4 py-16">
@@ -108,7 +108,7 @@ function Login() {
           </form>
 
           <p className="mt-6 rounded-lg bg-secondary px-3 py-2 text-xs text-muted-foreground">
-            Datos de prueba: <strong>lucia@mail.com</strong> con cualquier contraseña.
+            Cuenta de prueba: <strong>lucia@mail.com</strong>. Usá la contraseña configurada en el backend.
           </p>
         </div>
       </div>

@@ -11,7 +11,7 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
-import { SessionProvider } from "../lib/session";
+import { SessionProvider } from "@/lib/session";
 
 
 function NotFoundComponent() {
@@ -79,12 +79,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Feria — Marketplace de compra y venta" },
+      { title: "Bazar Libre — Marketplace de compra y venta" },
       {
         name: "description",
         content: "Publicá, preguntá, comprá y calificá. Marketplace con categorías jerárquicas y reputación calculada.",
       },
-      { property: "og:title", content: "Feria — Marketplace de compra y venta" },
+      { property: "og:title", content: "Bazar Libre — Marketplace de compra y venta" },
       {
         property: "og:description",
         content: "Publicá, preguntá, comprá y calificá en un marketplace simple.",

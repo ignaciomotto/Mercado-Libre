@@ -9,13 +9,13 @@ import heroImg from "@/assets/hero-feria.jpg";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Feria — Comprá y vendé entre personas" },
+      { title: "Bazar Libre — Comprá y vendé entre personas" },
       {
         name: "description",
         content:
           "Marketplace para publicar productos, preguntar antes de comprar y calificar a la otra parte. Buscá por categoría y precio.",
       },
-      { property: "og:title", content: "Feria — Comprá y vendé entre personas" },
+      { property: "og:title", content: "Bazar Libre — Comprá y vendé entre personas" },
       {
         property: "og:description",
         content: "Publicá, preguntá, comprá y calificá. Un marketplace simple y transparente.",

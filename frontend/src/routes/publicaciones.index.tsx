@@ -9,9 +9,9 @@ import { buscarPublicaciones, getCategorias, type FiltrosBusqueda } from "@/lib/
 export const Route = createFileRoute("/publicaciones/")({
   head: () => ({
     meta: [
-      { title: "Buscar publicaciones — Feria" },
-      { name: "description", content: "Buscá publicaciones activas por texto, categoría y rango de precio en Feria." },
-      { property: "og:title", content: "Buscar publicaciones — Feria" },
+      { title: "Buscar publicaciones — Bazar Libre" },
+      { name: "description", content: "Buscá publicaciones activas por texto, categoría y rango de precio en Bazar Libre." },
+      { property: "og:title", content: "Buscar publicaciones — Bazar Libre" },
       { property: "og:description", content: "Filtrá por texto, categoría y precio entre todas las publicaciones activas." },
     ],
   }),

@@ -9,6 +9,7 @@ from ..db.models.user_model import User
 from ..schemas.user_schema import UserResponse
 from ..dependencies.auth import get_current_user
 from ..services.user_service import UserService
+from ..utils.hash import verify_password
 
 router = APIRouter()
 
@@ -37,7 +38,7 @@ def login(
             detail="Credenciales incorrectas"
         )
 
-    if user.password != password:
+    if not (verify_password(password, user.password) if user.password.startswith("$pbkdf2") else user.password == password):
         raise HTTPException(
             status_code=401,
             detail="Credenciales incorrectas"

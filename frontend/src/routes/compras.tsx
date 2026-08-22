@@ -18,10 +18,10 @@ const ESTADOS: (EstadoCompra | "todas")[] = ["todas", "pendiente", "finalizada",
 export const Route = createFileRoute("/compras")({
   head: () => ({
     meta: [
-      { title: "Mis compras — Feria" },
+      { title: "Mis compras — Bazar Libre" },
       { name: "description", content: "Historial completo de tus compras ordenado por fecha, con filtros por estado, cancelación y calificación." },
-      { property: "og:title", content: "Mis compras — Feria" },
-      { property: "og:description", content: "Revisá, cancelá y calificá tus compras en Feria." },
+      { property: "og:title", content: "Mis compras — Bazar Libre" },
+      { property: "og:description", content: "Revisá, cancelá y calificá tus compras en Bazar Libre." },
     ],
   }),
   component: Compras,

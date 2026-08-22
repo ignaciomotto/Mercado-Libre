@@ -8,10 +8,10 @@ import { useSession } from "@/lib/session";
 export const Route = createFileRoute("/publicar")({
   head: () => ({
     meta: [
-      { title: "Publicar producto — Feria" },
+      { title: "Publicar producto — Bazar Libre" },
       { name: "description", content: "Publicá un producto en venta: precio y stock mayores a 0, y una categoría hoja." },
-      { property: "og:title", content: "Publicar producto — Feria" },
-      { property: "og:description", content: "Creá tu publicación en Feria en menos de un minuto." },
+      { property: "og:title", content: "Publicar producto — Bazar Libre" },
+      { property: "og:description", content: "Creá tu publicación en Bazar Libre en menos de un minuto." },
     ],
   }),
   component: Publicar,
@@ -25,6 +25,7 @@ function Publicar() {
   const [precio, setPrecio] = useState("");
   const [stock, setStock] = useState("");
   const [categoriaId, setCategoriaId] = useState("");
+  const [imagen, setImagen] = useState<File | undefined>();
   const [error, setError] = useState<string | null>(null);
 
   const { data: categorias = [] } = useQuery({ queryKey: ["categorias"], queryFn: getCategorias });
@@ -40,6 +41,7 @@ function Publicar() {
         stock: Number(stock),
         categoria_id: Number(categoriaId),
         vendedor_id: usuario!.id,
+        imagen,
       }),
     onSuccess: (p) =>
       navigate({ to: "/publicaciones/$publicacionId", params: { publicacionId: String(p.id) } }),
@@ -81,6 +83,17 @@ function Publicar() {
           <div>
             <label htmlFor="titulo" className="mb-1.5 block text-sm font-semibold">Título</label>
             <input id="titulo" required value={titulo} onChange={(e) => setTitulo(e.target.value)} className="field focus:field-focus" />
+          </div>
+          <div>
+            <label htmlFor="imagen" className="mb-1.5 block text-sm font-semibold">Imagen del producto</label>
+            <input
+              id="imagen"
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={(e) => setImagen(e.target.files?.[0])}
+              className="field focus:field-focus"
+            />
+            <p className="mt-1 text-xs text-muted-foreground">JPG, PNG o WEBP. Máximo 5 MB.</p>
           </div>
           <div>
             <label htmlFor="descripcion" className="mb-1.5 block text-sm font-semibold">Descripción</label>

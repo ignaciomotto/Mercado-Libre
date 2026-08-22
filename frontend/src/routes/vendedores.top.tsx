@@ -7,10 +7,10 @@ import { getTopVendedores } from "@/lib/api";
 export const Route = createFileRoute("/vendedores/top")({
   head: () => ({
     meta: [
-      { title: "Top vendedores — Feria" },
+      { title: "Top vendedores — Bazar Libre" },
       { name: "description", content: "Los 10 vendedores con mayor reputación, con al menos 5 compras finalizadas." },
-      { property: "og:title", content: "Top vendedores — Feria" },
-      { property: "og:description", content: "Ranking de los mejores vendedores de Feria por reputación y ventas." },
+      { property: "og:title", content: "Top vendedores — Bazar Libre" },
+      { property: "og:description", content: "Ranking de los mejores vendedores de Bazar Libre por reputación y ventas." },
     ],
   }),
   component: TopVendedores,

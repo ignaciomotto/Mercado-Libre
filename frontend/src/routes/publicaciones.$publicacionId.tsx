@@ -1,15 +1,17 @@
 import { useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { MessageCircleQuestion, Star } from "lucide-react";
+import { ImagePlus, MessageCircleQuestion, Pencil, Star, X } from "lucide-react";
 import { AppLayout } from "@/components/AppLayout";
 import {
   comprar,
+  actualizarPublicacion,
   crearPregunta,
   formatearFecha,
   formatearPrecio,
   getPreguntas,
   getPublicacion,
+  getCategorias,
   getUsuario,
   responderPregunta,
 } from "@/lib/api";
@@ -18,10 +20,10 @@ import { useSession } from "@/lib/session";
 export const Route = createFileRoute("/publicaciones/$publicacionId")({
   head: () => ({
     meta: [
-      { title: "Detalle de publicación — Feria" },
+      { title: "Detalle de publicación — Bazar Libre" },
       { name: "description", content: "Mirá el precio, el stock, las preguntas respondidas y comprá directamente al vendedor." },
-      { property: "og:title", content: "Detalle de publicación — Feria" },
-      { property: "og:description", content: "Precio, stock, preguntas y compra directa en Feria." },
+      { property: "og:title", content: "Detalle de publicación — Bazar Libre" },
+      { property: "og:description", content: "Precio, stock, preguntas y compra directa en Bazar Libre." },
     ],
   }),
   component: Detalle,
@@ -37,6 +39,13 @@ function Detalle() {
   const [cantidad, setCantidad] = useState(1);
   const [texto, setTexto] = useState("");
   const [respuestas, setRespuestas] = useState<Record<number, string>>({});
+  const [editando, setEditando] = useState(false);
+  const [titulo, setTitulo] = useState("");
+  const [descripcion, setDescripcion] = useState("");
+  const [precio, setPrecio] = useState("");
+  const [stock, setStock] = useState("");
+  const [categoriaId, setCategoriaId] = useState("");
+  const [imagen, setImagen] = useState<File | undefined>();
   const [mensaje, setMensaje] = useState<{ tipo: "ok" | "error"; texto: string } | null>(null);
 
   const { data: publicacion } = useQuery({
@@ -47,6 +56,7 @@ function Detalle() {
     queryKey: ["preguntas", id],
     queryFn: () => getPreguntas(id),
   });
+  const { data: categorias = [] } = useQuery({ queryKey: ["categorias"], queryFn: getCategorias });
   const { data: vendedor } = useQuery({
     queryKey: ["usuario", publicacion?.vendedor_id],
     queryFn: () => getUsuario(publicacion!.vendedor_id),
@@ -87,6 +97,24 @@ function Detalle() {
     onError: (e: Error) => setMensaje({ tipo: "error", texto: e.message }),
   });
 
+  const actualizarMut = useMutation({
+    mutationFn: () => actualizarPublicacion(id, {
+      titulo,
+      descripcion,
+      precio: Number(precio),
+      stock: Number(stock),
+      categoria_id: Number(categoriaId),
+      imagen,
+    }),
+    onSuccess: () => {
+      setEditando(false);
+      setImagen(undefined);
+      setMensaje({ tipo: "ok", texto: "Publicación actualizada." });
+      refrescar();
+    },
+    onError: (e: Error) => setMensaje({ tipo: "error", texto: e.message }),
+  });
+
   if (!publicacion) {
     return (
       <AppLayout>
@@ -98,15 +126,92 @@ function Detalle() {
   }
 
   const esVendedor = usuario?.id === publicacion.vendedor_id;
+  const puedeEditar = usuario?.id === 1 || esVendedor;
+
+  const iniciarEdicion = () => {
+    setTitulo(publicacion.titulo);
+    setDescripcion(publicacion.descripcion);
+    setPrecio(String(publicacion.precio));
+    setStock(String(publicacion.stock));
+    setCategoriaId(String(publicacion.categoria_id));
+    setImagen(undefined);
+    setMensaje(null);
+    setEditando(true);
+  };
 
   return (
     <AppLayout>
       <div className="mx-auto grid w-full max-w-6xl gap-8 px-4 py-10 lg:grid-cols-[1.6fr_1fr]">
         <div>
           <nav className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            Categoría #{publicacion.categoria_id}
+            {publicacion.categoria_nombre ?? "Sin categoría"}
           </nav>
-          <h1 className="mt-3 text-3xl font-extrabold">{publicacion.titulo}</h1>
+          <div className="mt-3 flex flex-wrap items-start justify-between gap-3">
+            <h1 className="text-3xl font-extrabold">{publicacion.titulo}</h1>
+            {puedeEditar && !editando && (
+              <button type="button" onClick={iniciarEdicion} className="btn-base btn-outline">
+                <Pencil className="size-4" />
+                Editar publicación
+              </button>
+            )}
+          </div>
+          {editando && (
+            <form
+              className="surface mt-6 space-y-4 p-5"
+              onSubmit={(e) => {
+                e.preventDefault();
+                setMensaje(null);
+                actualizarMut.mutate();
+              }}
+            >
+              <div className="flex items-center justify-between gap-3">
+                <h2 className="text-xl font-bold">Editar publicación</h2>
+                <button type="button" onClick={() => setEditando(false)} className="btn-base btn-outline px-3" aria-label="Cancelar edición">
+                  <X className="size-4" />
+                  Cancelar
+                </button>
+              </div>
+              <div>
+                <label htmlFor="editar-titulo" className="mb-1.5 block text-sm font-semibold">Título</label>
+                <input id="editar-titulo" required value={titulo} onChange={(e) => setTitulo(e.target.value)} className="field focus:field-focus" />
+              </div>
+              <div>
+                <label htmlFor="editar-descripcion" className="mb-1.5 block text-sm font-semibold">Descripción</label>
+                <textarea id="editar-descripcion" required rows={4} value={descripcion} onChange={(e) => setDescripcion(e.target.value)} className="field focus:field-focus resize-y" />
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label htmlFor="editar-precio" className="mb-1.5 block text-sm font-semibold">Precio</label>
+                  <input id="editar-precio" type="number" min={1} required value={precio} onChange={(e) => setPrecio(e.target.value)} className="field focus:field-focus" />
+                </div>
+                <div>
+                  <label htmlFor="editar-stock" className="mb-1.5 block text-sm font-semibold">Stock</label>
+                  <input id="editar-stock" type="number" min={1} required value={stock} onChange={(e) => setStock(e.target.value)} className="field focus:field-focus" />
+                </div>
+              </div>
+              <div>
+                <label htmlFor="editar-categoria" className="mb-1.5 block text-sm font-semibold">Categoría</label>
+                <select id="editar-categoria" required value={categoriaId} onChange={(e) => setCategoriaId(e.target.value)} className="field focus:field-focus">
+                  {categorias.map((categoria) => <option key={categoria.id} value={categoria.id}>{categoria.nombre}</option>)}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="editar-imagen" className="mb-1.5 block text-sm font-semibold">Reemplazar imagen</label>
+                <input id="editar-imagen" type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => setImagen(e.target.files?.[0])} className="field focus:field-focus" />
+                <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground"><ImagePlus className="size-3" /> JPG, PNG o WEBP. Máximo 5 MB.</p>
+              </div>
+              <button type="submit" disabled={actualizarMut.isPending} className="btn-base btn-primary w-full hover:brightness-105 disabled:opacity-60">
+                {actualizarMut.isPending ? "Guardando…" : "Guardar cambios"}
+              </button>
+            </form>
+          )}
+          {publicacion.imagen && (
+            <img
+              src={publicacion.imagen}
+              alt={publicacion.titulo}
+              className="mt-6 aspect-[4/3] w-full rounded-2xl object-cover"
+            />
+          )}
           <div className="mt-2 flex items-center gap-3 text-sm text-muted-foreground">
             <span
               className={

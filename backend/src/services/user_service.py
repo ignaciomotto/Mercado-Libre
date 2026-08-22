@@ -86,7 +86,7 @@ class UserService:
         self.db.commit()
         self.db.refresh(user)
 
-        return user_to_response_dto(user, self.get_user_reputation(user_id), self.get_user_rating_count(user_id))
+        return user_to_response_dto(user, self.get_user_reputation(user.id), self.get_user_rating_count(user.id))
 
     def update_user(
         self,

@@ -1,4 +1,7 @@
+from pathlib import Path
+
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 
 from src.middlewares.error_middleware import app_error_handler
@@ -6,6 +9,10 @@ from src.routers import auth_router, user_router, listing_router, category_route
 from src.utils.errors import AppError
 
 app = FastAPI(title="Initial Structure API")
+
+IMAGES_DIR = Path(__file__).resolve().parents[1] / "images"
+IMAGES_DIR.mkdir(parents=True, exist_ok=True)
+app.mount("/images", StaticFiles(directory=IMAGES_DIR), name="images")
 
 app.add_middleware(
     CORSMiddleware,
